@@ -3,38 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>منصة أدوات الذكاء الاصطناعي</title>
+  <title>CyberAI Terminal - Groq Engine</title>
   <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/index.js"></script>
 </head>
 <body>
 
-  <div class="container">
-    <nav class="tabs">
-      <button class="tab-btn active" data-tab="chat">💬 الشات الفوري</button>
-      <button class="tab-btn" data-tab="image">🖼️ إزالة الخلفية</button>
+  <div class="hacker-bg"></div>
+
+  <div class="cyber-container">
+    <header class="terminal-header">
+      <div class="terminal-dots">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+      </div>
+      <div class="terminal-title">CYBER_AI_V1.0 // GROQ_CORE</div>
+    </header>
+
+    <nav class="cyber-tabs">
+      <button class="cyber-btn active" data-tab="chat">
+        <span class="btn-icon">⚡</span> الشات السريع
+      </button>
+      <button class="cyber-btn" data-tab="image">
+        <span class="btn-icon">✂️</span> إزالة الخلفية
+      </button>
     </nav>
 
-    <!-- قسم الشات مع إضافة الشعار -->
+    <!-- قسم الشات -->
     <section id="chat-tab" class="tab-content active">
-      <div style="text-align: center; margin-bottom: 12px;">
-        <img src="https://raw.githubusercontent.com/groq/groq-api-cookbook/main/assets/groq-logo-purple.png" alt="Groq AI Logo" style="height: 38px; width: auto; object-fit: contain;">
+      <div class="brand-header">
+        <svg class="groq-logo" viewBox="0 0 100 30" xmlns="http://www.w3.org/2000/svg">
+          <text x="50%" y="65%" dominant-baseline="middle" text-anchor="middle" font-family="'Fira Code', monospace" font-size="22" font-weight="bold" fill="#00ff66" letter-spacing="3">GROQ AI</text>
+        </svg>
+        <div class="status-indicator">
+          <span class="pulse-dot"></span> SYSTEM ONLINE
+        </div>
       </div>
-      <div id="chat-box"></div>
-      <div class="input-group">
-        <input type="text" id="userInput" placeholder="اكتب سؤالك هنا...">
-        <button id="sendBtn">إرسال</button>
+
+      <div id="chat-box" class="cyber-chat-box">
+        <div class="msg ai-msg">
+          <div class="msg-author">SYSTEM</div>
+          <div class="msg-content">مرحباً بك في النظام. اكتب استفسارك للبدء...</div>
+        </div>
+      </div>
+
+      <div class="input-container">
+        <input type="text" id="userInput" autocomplete="off" placeholder="اكتب أمرك أو سؤالك هنا..." />
+        <button id="sendBtn" class="send-action-btn">
+          <span>إرسال</span> ➔
+        </button>
       </div>
     </section>
 
     <!-- قسم إزالة الخلفية -->
     <section id="image-tab" class="tab-content">
-      <input type="file" id="uploadInput" accept="image/*">
-      <button id="bgBtn">إزالة الخلفية</button>
-      <div id="result"></div>
+      <div class="file-upload-zone">
+        <input type="file" id="uploadInput" accept="image/*" />
+        <p>اختر صورة لمعالجتها وإزالة خلفيتها</p>
+      </div>
+      <button id="bgBtn" class="cyber-action-btn">بدء المعالجة</button>
+      <div id="result" class="result-box"></div>
     </section>
 
-    <div id="status">الحالة: جاهز</div>
+    <footer class="terminal-footer">
+      <span id="status">STATUS: READY</span>
+    </footer>
   </div>
 
   <script src="js/main.js"></script>
@@ -42,3 +77,4 @@
   <script src="js/chat.js"></script>
 </body>
 </html>
+ 
