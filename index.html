@@ -3,77 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CyberAI Terminal - Groq Engine</title>
+  <title>CYBER_AI_V1.0 // ALL-IN-ONE PLATFORM</title>
   <link rel="stylesheet" href="css/style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/index.js"></script>
 </head>
 <body>
 
-  <div class="hacker-bg"></div>
-
-  <div class="cyber-container">
-    <header class="terminal-header">
-      <div class="terminal-dots">
-        <span class="dot red"></span>
-        <span class="dot yellow"></span>
-        <span class="dot green"></span>
+  <div class="chat-wrapper">
+    <!-- شريط العناوين الرئيسي -->
+    <header class="chat-header">
+      <div class="header-top">
+        <span class="status-indicator">
+          <span class="dot"></span>
+          <span id="status">SYSTEM ONLINE</span>
+        </span>
+        <h2>GROQ AI</h2>
       </div>
-      <div class="terminal-title">CYBER_AI_V1.0 // GROQ_CORE</div>
+
+      <!-- شريط التبويبات والأقسام -->
+      <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('chat-tab', this)">⚡ الشات السريع</button>
+        <button class="tab-btn" onclick="switchTab('mail-tab', this)">📧 خدمة البريد (AliMail)</button>
+        <!-- يمكنك إضافة أقسام جديدة هنا مستقبلاً -->
+      </nav>
     </header>
 
-    <nav class="cyber-tabs">
-      <button class="cyber-btn active" data-tab="chat">
-        <span class="btn-icon">⚡</span> الشات السريع
-      </button>
-      <button class="cyber-btn" data-tab="image">
-        <span class="btn-icon">✂️</span> إزالة الخلفية
-      </button>
-    </nav>
-
-    <!-- قسم الشات -->
-    <section id="chat-tab" class="tab-content active">
-      <div class="brand-header">
-        <svg class="groq-logo" viewBox="0 0 100 30" xmlns="http://www.w3.org/2000/svg">
-          <text x="50%" y="65%" dominant-baseline="middle" text-anchor="middle" font-family="'Fira Code', monospace" font-size="22" font-weight="bold" fill="#00ff66" letter-spacing="3">GROQ AI</text>
-        </svg>
-        <div class="status-indicator">
-          <span class="pulse-dot"></span> SYSTEM ONLINE
-        </div>
-      </div>
-
-      <div id="chat-box" class="cyber-chat-box">
-        <div class="msg ai-msg">
+    <!-- قسم الشات الذكي -->
+    <div id="chat-tab" class="tab-content active-content">
+      <div id="chat-box" class="chat-box">
+        <div class="msg system-msg">
           <div class="msg-author">SYSTEM</div>
           <div class="msg-content">مرحباً بك في النظام. اكتب استفسارك للبدء...</div>
         </div>
       </div>
 
-      <div class="input-container">
-        <input type="text" id="userInput" autocomplete="off" placeholder="اكتب أمرك أو سؤالك هنا..." />
-        <button id="sendBtn" class="send-action-btn">
-          <span>إرسال</span> ➔
-        </button>
+      <div class="chat-input-container">
+        <button id="sendBtn" type="button">إرسال ➔</button>
+        <input type="text" id="userInput" placeholder="اكتب أمرك أو سؤالك هنا..." />
       </div>
-    </section>
+    </div>
 
-    <!-- قسم إزالة الخلفية -->
-    <section id="image-tab" class="tab-content">
-      <div class="file-upload-zone">
-        <input type="file" id="uploadInput" accept="image/*" />
-        <p>اختر صورة لمعالجتها وإزالة خلفيتها</p>
-      </div>
-      <button id="bgBtn" class="cyber-action-btn">بدء المعالجة</button>
-      <div id="result" class="result-box"></div>
-    </section>
+    <!-- قسم خدمة البريد الإلكتروني (AliMail) -->
+    <div id="mail-tab" class="tab-content">
+      <iframe src="https://alimail.onrender.com/" class="app-iframe" title="AliMail Service"></iframe>
+    </div>
 
-    <footer class="terminal-footer">
-      <span id="status">STATUS: READY</span>
-    </footer>
   </div>
 
-  <script src="js/main.js"></script>
-  <script src="js/bg-remover.js"></script>
   <script src="js/chat.js"></script>
+  <script>
+    // الدالة المسؤولة عن التنقل بين الأقسام
+    function switchTab(tabId, btn) {
+      // إخفاء جميع الأقسام
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active-content');
+      });
+      // إزالة التفعيل عن الأزرار
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active');
+      });
+
+      // إظهار القسم المطلوب وتفعيل زره
+      document.getElementById(tabId).classList.add('active-content');
+      btn.classList.add('active');
+    }
+  </script>
 </body>
 </html>
+ 
