@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منصة أدوات الذكاء الاصطناعي</title>
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- مكتبات خارجية -->
+  <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/index.js"></script>
+</head>
+<body>
+
+  <div class="container">
+    <!-- أزرار التنقل -->
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="chat">💬 الشات الفوري</button>
+      <button class="tab-btn" data-tab="image">🖼️ إزالة الخلفية</button>
+    </nav>
+
+    <!-- قسم الشات -->
+    <section id="chat-tab" class="tab-content active">
+      <div id="chat-box"></div>
+      <div class="input-group">
+        <input type="text" id="userInput" placeholder="اكتب سؤالك هنا...">
+        <button id="sendBtn">إرسال</button>
+      </div>
+    </section>
+
+    <!-- قسم إزالة الخلفية -->
+    <section id="image-tab" class="tab-content">
+      <input type="file" id="uploadInput" accept="image/*">
+      <button id="bgBtn">إزالة الخلفية</button>
+      <div id="result"></div>
+    </section>
+
+    <div id="status">الحالة: جاهز</div>
+  </div>
+
+  <!-- استدعاء ملفات السكريبت المقسمة -->
+  <script src="js/main.js"></script>
+  <script src="js/bg-remover.js"></script>
+  <script type="module" src="js/chat.js"></script>
+</body>
+</html>
