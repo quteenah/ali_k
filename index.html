@@ -52,7 +52,7 @@
 
     <!-- 4. كروت الخدمات والتطبيق (Services Grid) -->
     <section class="services-grid">
-      <div class="service-card cyan-card">
+      <div class="service-card cyan-card" id="aiToolsCard">
         <span class="s-icon">✨</span>
         <h3>أدوات AI</h3>
         <p>مجموعة أدوات ذكية</p>
@@ -66,7 +66,7 @@
         <span class="arrow">➔</span>
       </div>
 
-      <div class="service-card green-card">
+      <div class="service-card green-card" id="bgRemoverCard">
         <span class="s-icon">🖼️</span>
         <h3>إزالة الخلفية</h3>
         <p>إزالة خلفية الصور بسهولة</p>
@@ -88,7 +88,7 @@
         </div>
       </div>
 
-      <!-- شريط الإدخال المطور مع أدوات الصوت والملفات -->
+      <!-- شريط الإدخال -->
       <div class="chat-input-bar">
         <button id="sendBtn" class="send-action-btn" type="button">إرسال 🚀</button>
         <input type="text" id="userInput" placeholder="اكتب أمرك أو سؤالك هنا..." />
@@ -103,12 +103,12 @@
 
     <!-- 6. شريط الأدوات السفلية (Bottom Navigation) -->
     <footer class="bottom-tools">
-      <div class="tool-item">
+      <div class="tool-item" id="bottomMailBtn" style="cursor:pointer;">
         <span class="t-icon">📧</span>
         <strong>البريد المؤقت</strong>
         <small>بريد آمن وسريع</small>
       </div>
-      <div class="tool-item">
+      <div class="tool-item" id="bottomBgBtn" style="cursor:pointer;">
         <span class="t-icon">✂️</span>
         <strong>إزالة الخلفية</strong>
         <small>إزالة خلفية الصور</small>
@@ -134,7 +134,21 @@
 
   </div>
 
+  <!-- النافذة المنبثقة العامة للخدمات (Modal) -->
+  <div id="modalContainer" class="modal-backdrop" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalTitle">عنوان الخدمة</h3>
+        <button id="closeModalBtn" class="close-btn">✖</button>
+      </div>
+      <div id="modalBody" class="modal-body">
+        <!-- المحتوى الديناميكي للخدمة -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ملفات السكريبت -->
   <script src="js/chat.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
- 
