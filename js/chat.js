@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const sendBtn = document.getElementById('sendBtn');
   const statusText = document.getElementById('status');
 
-  // مفتاح Groq API
-  const GROQ_API_KEY = "Gsk_0BOhUyYbSJd5jyIZUkW7WGdyb3FYHTypye1MygvzEiJEo7ZFsfab";
+  // مفتاح Groq API الجديد الخاص بك
+  const GROQ_API_KEY = "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";
 
   async function handleSend() {
     if (!userInput) return;
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. تفريغ الخانة فوراً
     userInput.value = '';
 
-    // 2. إظهار رسالة المستخدم فوراً
+    // 2. إظهار رسالة المستخدم
     const userDiv = document.createElement('div');
     userDiv.className = 'msg user-msg';
     userDiv.innerHTML = `
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chatBox.appendChild(userDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    // 3. إشعار الانتظار
+    // 3. مؤشر جاري الرد
     const aiDiv = document.createElement('div');
     aiDiv.className = 'msg ai-msg';
     aiDiv.innerHTML = `
@@ -56,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const reply = data.choices[0].message.content;
         aiDiv.querySelector('.msg-content').innerHTML = reply.replace(/\n/g, '<br>');
       } else {
-        // إذا فشل المفتاح الحالي أو الموديل، نُظهر تفاصيل الخطأ بدقة
         const errorDetail = data.error ? data.error.message : 'خطأ غير معروف في السيرفر';
         aiDiv.querySelector('.msg-content').innerText = `خطأ: ${errorDetail}`;
       }
@@ -84,4 +83,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
- 
