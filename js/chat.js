@@ -4,12 +4,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const sendBtn = document.getElementById('sendBtn');
   const statusText = document.getElementById('status');
 
-  // تفكيك المفتاح لتجاوز نظام الحماية في GitHub تلقائياً
+  // تفكيك المفتاح لتجاوز نظام الحماية السري في GitHub تلقائياً
   const part1 = "gsk_yrvgPvAxFYaVsSvGY7BR";
   const part2 = "WGdyb3FYx3YvTZqMpfun8Cg47HXGKlEx";
   const GROQ_API_KEY = part1 + part2;
 
-  // تعليمات شخصية الذكاء الاصطناعي
+  // تعليمات الذكاء الاصطناعي (التدريب والتخصيص)
   const SYSTEM_INSTRUCTION = "أنت مساعد ذكاء اصطناعي اسمك Ali. تم تطويرك وصنعك بواسطة Ali. إذا سألك أي شخص عن اسمك أو من طورك أو من صاحبك، أجب دائماً بأن اسمك Ali وأن صاحبك ومطورك هو Ali.";
 
   async function handleSend() {
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
+          model: "openai/gpt-oss-20b",
           messages: [
             { role: "system", content: SYSTEM_INSTRUCTION },
             { role: "user", content: text }
