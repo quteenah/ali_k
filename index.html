@@ -3,69 +3,138 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CYBER_AI_V1.0 // ALL-IN-ONE PLATFORM</title>
+  <title>CYBER_AI // GROQ_CORE</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <div class="chat-wrapper">
-    <header class="chat-header">
-      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px;">
-        <div class="status-indicator">
-          <span class="dot"></span>
-          <span id="status">SYSTEM ONLINE</span>
+  <div class="main-container">
+    
+    <!-- 1. الشريط العلوي (Header) -->
+    <header class="top-bar">
+      <button class="menu-btn" type="button">☰</button>
+      <div class="brand">
+        <span class="logo-icon">🧠</span>
+        <div class="brand-text">
+          <h1>CYBER_AI</h1>
+          <span class="sub-logo">// GROQ_CORE</span>
         </div>
-        <h2>GROQ AI</h2>
       </div>
-
-      <!-- شريط التنقل بين الأقسام -->
-      <div class="nav-tabs">
-        <button class="tab-btn active" id="btn-chat" onclick="switchTab('chat')">⚡ الشات السريع</button>
-        <button class="tab-btn" id="btn-mail" onclick="switchTab('mail')">📧 خدمة البريد (AliMail)</button>
+      <div class="user-status">
+        <span class="status-badge">● متصل <small>GROQ AI</small></span>
+        <button class="profile-btn" type="button">👤</button>
       </div>
     </header>
 
-    <!-- قسم الشات -->
-    <div id="chat-tab" class="tab-content active-content">
+    <!-- 2. الأقسام الرئيسية (Nav Tabs) -->
+    <nav class="main-nav">
+      <button class="nav-item active" type="button"><span class="icon">🏠</span> الرئيسية</button>
+      <button class="nav-item" type="button"><span class="icon">💬</span> محادثاتي</button>
+      <button class="nav-item" type="button"><span class="icon">👤</span> الملف الشخصي</button>
+      <button class="nav-item" type="button"><span class="icon">⚙️</span> الإعدادات</button>
+    </nav>
+
+    <!-- 3. الأوامر الجاهزة -->
+    <section class="section-container">
+      <div class="section-title">
+        <span>🎯 أوامر جاهزة لنتائج أسرع</span>
+        <span class="badge-tag">⚡ الشات السريع</span>
+      </div>
+      <div class="quick-prompts">
+        <button class="prompt-btn green" type="button"><span class="p-icon">💡</span> فكرة مشروع</button>
+        <button class="prompt-btn pink" type="button"><span class="p-icon">🖼️</span> حلل صورة</button>
+        <button class="prompt-btn cyan" type="button"><span class="p-icon">📄</span> حلل ملف</button>
+        <button class="prompt-btn purple" type="button"><span class="p-icon">📝</span> اكتب نص</button>
+        <button class="prompt-btn orange" type="button"><span class="p-icon">🔧</span> أصلح خطأ</button>
+        <button class="prompt-btn blue" type="button"><span class="p-icon">&lt;/&gt;</span> اكتب كود</button>
+      </div>
+    </section>
+
+    <!-- 4. كروت الخدمات والتطبيق (Services Grid) -->
+    <section class="services-grid">
+      <div class="service-card cyan-card">
+        <span class="s-icon">✨</span>
+        <h3>أدوات AI</h3>
+        <p>مجموعة أدوات ذكية</p>
+        <span class="arrow">➔</span>
+      </div>
+      
+      <div class="service-card blue-card" id="mailCard">
+        <span class="s-icon">📧</span>
+        <h3>البريد المؤقت</h3>
+        <p>احصل على بريد مؤقت</p>
+        <span class="arrow">➔</span>
+      </div>
+
+      <div class="service-card green-card">
+        <span class="s-icon">🖼️</span>
+        <h3>إزالة الخلفية</h3>
+        <p>إزالة خلفية الصور بسهولة</p>
+        <span class="arrow">➔</span>
+      </div>
+    </section>
+
+    <!-- 5. نافذة الشات الأساسية -->
+    <section class="chat-section">
+      <div class="chat-header-status">
+        <span class="online-dot">●</span> SYSTEM ONLINE
+        <span class="groq-title">GROQ AI</span>
+      </div>
+
       <div id="chat-box" class="chat-box">
         <div class="msg system-msg">
           <div class="msg-author">SYSTEM</div>
-          <div class="msg-content">مرحباً بك في النظام. اكتب استفسارك للبدء...</div>
+          <div class="msg-content">مرحباً بك في النظام، اكتب استفسارك للبدء...</div>
         </div>
       </div>
 
-      <div class="chat-input-container">
-        <button id="sendBtn" type="button">إرسال ➔</button>
+      <!-- شريط الإدخال المطور مع أدوات الصوت والملفات -->
+      <div class="chat-input-bar">
+        <button id="sendBtn" class="send-action-btn" type="button">إرسال 🚀</button>
         <input type="text" id="userInput" placeholder="اكتب أمرك أو سؤالك هنا..." />
+        
+        <div class="input-tools">
+          <button id="imgBtn" class="tool-btn" type="button" title="رفع صورة">🖼️</button>
+          <button id="fileBtn" class="tool-btn" type="button" title="رفع ملف">📎</button>
+          <button id="micBtn" class="tool-btn" type="button" title="ميكروفون">🎙️</button>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- قسم البريد الإلكتروني -->
-    <div id="mail-tab" class="tab-content" style="display: none;">
-      <iframe src="https://alimail.onrender.com/" class="app-iframe" title="AliMail Service"></iframe>
-    </div>
+    <!-- 6. شريط الأدوات السفلية (Bottom Navigation) -->
+    <footer class="bottom-tools">
+      <div class="tool-item">
+        <span class="t-icon">📧</span>
+        <strong>البريد المؤقت</strong>
+        <small>بريد آمن وسريع</small>
+      </div>
+      <div class="tool-item">
+        <span class="t-icon">✂️</span>
+        <strong>إزالة الخلفية</strong>
+        <small>إزالة خلفية الصور</small>
+      </div>
+      <div class="tool-item">
+        <span class="t-icon">📄</span>
+        <strong>تحليل الملفات</strong>
+        <small>PDF - TXT - DOCX</small>
+      </div>
+      <div class="tool-item">
+        <span class="t-icon">🖼️</span>
+        <strong>تحليل الصور</strong>
+        <small>وصف - تحليل - أسئلة</small>
+      </div>
+      <div class="tool-item">
+        <span class="t-icon">&lt;/&gt;</span>
+        <strong>وضع المبرمج</strong>
+        <small>كود - إصلاح - شرح</small>
+      </div>
+    </footer>
+
+    <div class="footer-tag">POWERED BY GROQ AI</div>
+
   </div>
 
   <script src="js/chat.js"></script>
-  <script>
-    function switchTab(tab) {
-      const chatTab = document.getElementById('chat-tab');
-      const mailTab = document.getElementById('mail-tab');
-      const btnChat = document.getElementById('btn-chat');
-      const btnMail = document.getElementById('btn-mail');
-
-      if (tab === 'chat') {
-        chatTab.style.display = 'flex';
-        mailTab.style.display = 'none';
-        btnChat.classList.add('active');
-        btnMail.classList.remove('active');
-      } else {
-        chatTab.style.display = 'none';
-        mailTab.style.display = 'block';
-        btnMail.classList.add('active');
-        btnChat.classList.remove('active');
-      }
-    }
-  </script>
 </body>
 </html>
+ 
