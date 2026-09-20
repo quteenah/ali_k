@@ -37,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (statusText) statusText.innerText = 'STATUS: SENDING...';
 
-    // 4. إرسال الطلب بسرعة فائقة
     try {
       const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
@@ -46,10 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [{ role: "user", content: text }],
-          temperature: 0.7,
-          max_tokens: 1024
+          model: "llama-3.1-8b-instant",
+          messages: [{ role: "user", content: text }]
         })
       });
 
@@ -59,17 +56,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const reply = data.choices[0].message.content;
         aiDiv.querySelector('.msg-content').innerHTML = reply.replace(/\n/g, '<br>');
       } else {
-        aiDiv.querySelector('.msg-content').innerText = 'خطأ في استجابة النظام.';
+        // إذا فشل المفتاح الحالي أو الموديل، نُظهر تفاصيل الخطأ بدقة
+        const errorDetail = data.error ? data.error.message : 'خطأ غير معروف في السيرفر';
+        aiDiv.querySelector('.msg-content').innerText = `خطأ: ${errorDetail}`;
       }
     } catch (e) {
-      aiDiv.querySelector('.msg-content').innerText = 'تأكد من الاتصال بالإنترنت.';
+      aiDiv.querySelector('.msg-content').innerText = 'تعذر الاتصال بالسيرفر. تحقق من إنترنت جهازك.';
     }
 
     if (statusText) statusText.innerText = 'STATUS: READY';
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
-  // ربط الأزرار بلمس الشاشات والتطبيقات اللمسية بسرعة
   if (sendBtn) {
     sendBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -86,3 +84,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+ 
