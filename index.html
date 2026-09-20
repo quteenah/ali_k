@@ -3,100 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ali AI - الشات السريع</title>
+  <title>CyberAI Terminal - Groq Engine</title>
   <link rel="stylesheet" href="css/style.css">
-  <style>
-    /* تحسينات سريعة لشريط الإدخال والأزرار */
-    .chat-input-container {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px;
-      background: #111a2e;
-      border-top: 1px solid #1f293d;
-    }
-
-    .chat-input-container input {
-      flex: 1;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #2a3b5c;
-      background: #0a0f1d;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-    }
-
-    .chat-input-container input:focus {
-      border-color: #00ff88;
-    }
-
-    .icon-btn, #sendBtn {
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background 0.2s;
-    }
-
-    .icon-btn {
-      background: #1f293d;
-      color: #fff;
-    }
-
-    .icon-btn:hover {
-      background: #2a3b5c;
-    }
-
-    #sendBtn {
-      background: #00ff88;
-      color: #0a0f1d;
-      font-weight: bold;
-    }
-
-    #sendBtn:hover {
-      background: #00cc6a;
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/index.js"></script>
 </head>
 <body>
 
-  <div class="chat-wrapper">
-    <!-- الهيدر أو شريط العنوان -->
-    <header class="chat-header">
-      <div class="status-indicator">
-        <span class="dot"></span>
-        <span id="status">STATUS: READY</span>
+  <div class="hacker-bg"></div>
+
+  <div class="cyber-container">
+    <header class="terminal-header">
+      <div class="terminal-dots">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
       </div>
-      <h2>GROQ AI</h2>
+      <div class="terminal-title">CYBER_AI_V1.0 // GROQ_CORE</div>
     </header>
 
-    <!-- صندوق عرض المحادثات -->
-    <div id="chat-box" class="chat-box">
-      <div class="msg system-msg">
-        <div class="msg-author">SYSTEM</div>
-        <div class="msg-content">مرحباً بك في النظام. اكتب استفسارك للبدء...</div>
-      </div>
-    </div>
+    <nav class="cyber-tabs">
+      <button class="cyber-btn active" data-tab="chat">
+        <span class="btn-icon">⚡</span> الشات السريع
+      </button>
+      <button class="cyber-btn" data-tab="image">
+        <span class="btn-icon">✂️</span> إزالة الخلفية
+      </button>
+    </nav>
 
-    <!-- نموذج الإدخال والأزرار الجديدة -->
-    <div class="chat-input-container">
-      <input type="text" id="userInput" placeholder="اكتب أمرك أو سؤالك هنا..." />
-      
-      <!-- زر الميكروفون (التحديث الصوتي) -->
-      <button id="micBtn" class="icon-btn" type="button" title="تحدث عبر الميكروفون">🎤</button>
-      
-      <!-- زر التحكم بالنطق الصوتي للردود -->
-      <button id="ttsBtn" class="icon-btn" type="button" title="تفعيل/إلغاء القراءة الصوتية">🔊</button>      
-      
-      <!-- زر الإرسال -->
-      <button id="sendBtn" type="button">إرسال ➔</button>
-    </div>
+    <!-- قسم الشات -->
+    <section id="chat-tab" class="tab-content active">
+      <div class="brand-header">
+        <svg class="groq-logo" viewBox="0 0 100 30" xmlns="http://www.w3.org/2000/svg">
+          <text x="50%" y="65%" dominant-baseline="middle" text-anchor="middle" font-family="'Fira Code', monospace" font-size="22" font-weight="bold" fill="#00ff66" letter-spacing="3">GROQ AI</text>
+        </svg>
+        <div class="status-indicator">
+          <span class="pulse-dot"></span> SYSTEM ONLINE
+        </div>
+      </div>
+
+      <div id="chat-box" class="cyber-chat-box">
+        <div class="msg ai-msg">
+          <div class="msg-author">SYSTEM</div>
+          <div class="msg-content">مرحباً بك في النظام. اكتب استفسارك للبدء...</div>
+        </div>
+      </div>
+
+      <div class="input-container">
+        <input type="text" id="userInput" autocomplete="off" placeholder="اكتب أمرك أو سؤالك هنا..." />
+        <button id="sendBtn" class="send-action-btn">
+          <span>إرسال</span> ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- قسم إزالة الخلفية -->
+    <section id="image-tab" class="tab-content">
+      <div class="file-upload-zone">
+        <input type="file" id="uploadInput" accept="image/*" />
+        <p>اختر صورة لمعالجتها وإزالة خلفيتها</p>
+      </div>
+      <button id="bgBtn" class="cyber-action-btn">بدء المعالجة</button>
+      <div id="result" class="result-box"></div>
+    </section>
+
+    <footer class="terminal-footer">
+      <span id="status">STATUS: READY</span>
+    </footer>
   </div>
 
-  <!-- ربط ملف السكريبت الخاص بالشات -->
+  <script src="js/main.js"></script>
+  <script src="js/bg-remover.js"></script>
   <script src="js/chat.js"></script>
 </body>
 </html>
- 
