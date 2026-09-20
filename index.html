@@ -9,25 +9,23 @@
 <body>
 
   <div class="chat-wrapper">
-    <!-- شريط العناوين الرئيسي -->
     <header class="chat-header">
-      <div class="header-top">
-        <span class="status-indicator">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px;">
+        <div class="status-indicator">
           <span class="dot"></span>
           <span id="status">SYSTEM ONLINE</span>
-        </span>
+        </div>
         <h2>GROQ AI</h2>
       </div>
 
-      <!-- شريط التبويبات والأقسام -->
-      <nav class="nav-tabs">
-        <button class="tab-btn active" onclick="switchTab('chat-tab', this)">⚡ الشات السريع</button>
-        <button class="tab-btn" onclick="switchTab('mail-tab', this)">📧 خدمة البريد (AliMail)</button>
-        <!-- يمكنك إضافة أقسام جديدة هنا مستقبلاً -->
-      </nav>
+      <!-- شريط التنقل بين الأقسام -->
+      <div class="nav-tabs">
+        <button class="tab-btn active" id="btn-chat" onclick="switchTab('chat')">⚡ الشات السريع</button>
+        <button class="tab-btn" id="btn-mail" onclick="switchTab('mail')">📧 خدمة البريد (AliMail)</button>
+      </div>
     </header>
 
-    <!-- قسم الشات الذكي -->
+    <!-- قسم الشات -->
     <div id="chat-tab" class="tab-content active-content">
       <div id="chat-box" class="chat-box">
         <div class="msg system-msg">
@@ -42,31 +40,32 @@
       </div>
     </div>
 
-    <!-- قسم خدمة البريد الإلكتروني (AliMail) -->
-    <div id="mail-tab" class="tab-content">
+    <!-- قسم البريد الإلكتروني -->
+    <div id="mail-tab" class="tab-content" style="display: none;">
       <iframe src="https://alimail.onrender.com/" class="app-iframe" title="AliMail Service"></iframe>
     </div>
-
   </div>
 
   <script src="js/chat.js"></script>
   <script>
-    // الدالة المسؤولة عن التنقل بين الأقسام
-    function switchTab(tabId, btn) {
-      // إخفاء جميع الأقسام
-      document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active-content');
-      });
-      // إزالة التفعيل عن الأزرار
-      document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('active');
-      });
+    function switchTab(tab) {
+      const chatTab = document.getElementById('chat-tab');
+      const mailTab = document.getElementById('mail-tab');
+      const btnChat = document.getElementById('btn-chat');
+      const btnMail = document.getElementById('btn-mail');
 
-      // إظهار القسم المطلوب وتفعيل زره
-      document.getElementById(tabId).classList.add('active-content');
-      btn.classList.add('active');
+      if (tab === 'chat') {
+        chatTab.style.display = 'flex';
+        mailTab.style.display = 'none';
+        btnChat.classList.add('active');
+        btnMail.classList.remove('active');
+      } else {
+        chatTab.style.display = 'none';
+        mailTab.style.display = 'block';
+        btnMail.classList.add('active');
+        btnChat.classList.remove('active');
+      }
     }
   </script>
 </body>
 </html>
- 
