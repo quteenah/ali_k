@@ -1,42 +1,48 @@
-import * as webllm from "https://esm.run/@mlc-ai/web-llm";
-
 const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
 const statusText = document.getElementById('status');
 
-let engine;
-const model = "Llama-3-8B-Instruct-q4f16_1-MLC";
-
-async function initChat() {
-  statusText.innerText = "جاري تهيئة نموذج الذكاء الاصطناعي...";
-  engine = await webllm.CreateMLCEngine(model, {
-    initProgressCallback: (r) => statusText.innerText = r.text
-  });
-  statusText.innerText = "الشات جاهز للاستخدام!";
-}
+// مفتاح Groq API الخاص بك
+const GROQ_API_KEY = "Gsk_0BOhUyYbSJd5jyIZUkW7WGdyb3FYHTypye1MygvzEiJEo7ZFsfab";
 
 sendBtn.addEventListener('click', async () => {
   const text = userInput.value.trim();
   if (!text) return;
 
-  if (!engine) await initChat();
-
-  chatBox.innerHTML += `<div><b>أنت:</b> ${text}</div>`;
+  chatBox.innerHTML += `<div style="text-align:right; margin:8px 0;"><b>أنت:</b> ${text}</div>`;
   userInput.value = '';
 
   const aiDiv = document.createElement('div');
+  aiDiv.style.textAlign = 'right';
+  aiDiv.style.margin = '8px 0';
+  aiDiv.style.color = '#333';
   aiDiv.innerHTML = `<b>الذكاء الاصطناعي:</b> جاري التفكير...`;
   chatBox.appendChild(aiDiv);
+  chatBox.scrollTop = chatBox.scrollHeight;
 
-  const chunks = await engine.chat.completions.create({
-    messages: [{ role: "user", content: text }],
-    stream: true,
-  });
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: text }]
+      })
+    });
 
-  let reply = "";
-  for await (const chunk of chunks) {
-    reply += chunk.choices[0]?.delta?.content || "";
-    aiDiv.innerHTML = `<b>الذكاء الاصطناعي:</b> ${reply}`;
+    const data = await res.json();
+    if (data.choices && data.choices[0]) {
+      const reply = data.choices[0].message.content;
+      aiDiv.innerHTML = `<b>الذكاء الاصطناعي:</b> ${reply.replace(/\n/g, '<br>')}`;
+    } else {
+      aiDiv.innerHTML = `<b>الذكاء الاصطناعي:</b> حدث خطأ في استجابة الخادم.`;
+    }
+  } catch (e) {
+    aiDiv.innerHTML = `<b>الذكاء الاصطناعي:</b> تعذر الاتصال بالسيرفر.`;
   }
+  chatBox.scrollTop = chatBox.scrollHeight;
 });
