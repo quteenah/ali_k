@@ -1,64 +1,48 @@
 /* ==========================================
-   تنسيقات الأقسام والتنقل (Tabs Navigation)
+   تنسيقات شريط التنقل والإطار
    ========================================== */
-
-.header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
 
 .nav-tabs {
   display: flex;
-  gap: 10px;
-  background: rgba(10, 15, 29, 0.6);
-  padding: 6px;
-  border-radius: 10px;
-  border: 1px solid #1f293d;
+  gap: 8px;
+  width: 100%;
+  margin-top: 5px;
 }
 
 .tab-btn {
   flex: 1;
-  padding: 8px 14px;
-  background: transparent;
-  border: none;
+  padding: 8px 12px;
+  background: #0a0f1d;
+  border: 1px solid #1f293d;
   color: #8a99ad;
   font-size: 13px;
   font-weight: bold;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .tab-btn:hover {
+  border-color: #00ff88;
   color: #fff;
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .tab-btn.active {
   background: #00ff88;
   color: #0a0f1d;
-  box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+  border-color: #00ff88;
 }
 
-/* إخفاء وإظهار محتوى الأقسام */
 .tab-content {
-  display: none;
-  flex-direction: column;
-  height: calc(100% - 110px);
+  width: 100%;
+  height: 100%;
 }
 
-.tab-content.active-content {
-  display: flex;
-}
-
-/* تنسيق إطار عرض موقع AliMail */
 .app-iframe {
   width: 100%;
-  height: 600px;
-  min-height: 70vh;
-  border: 1px solid #1f293d;
-  border-radius: 12px;
+  height: 500px;
+  border: none;
+  border-radius: 8px;
   background: #0a0f1d;
 }
+ 
