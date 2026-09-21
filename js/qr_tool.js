@@ -2,6 +2,9 @@
 // أداة صانع وقارئ رموز QR (QR Code Tool)
 // ==========================================
 
+let qrStream = null; // للحفاظ على مسار بث الكاميرا الحية
+let qrVideoInterval = null;
+
 function openQrToolService() {
   const modal = document.getElementById("modalContainer");
   const title = document.getElementById("modalTitle");
@@ -47,9 +50,24 @@ function openQrToolService() {
       <!-- قسم قراءة رمز QR -->
       <div id="qrScanSection" style="display: none; flex-direction: column; gap: 12px;">
         
-        <div>
-          <label style="font-size: 0.85rem; color: #94a3b8; display: block; margin-bottom: 6px;">اختر صورة أو التقطها بالكاميرا:</label>
-          <input type="file" id="qrFileInput" accept="image/*" capture="environment" onchange="scanQrFromImage(this)" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; color: #fff; outline: none; box-sizing: border-box;">
+        <!-- خيارات إدخال الصورة (من المعرض أو الكاميرا) -->
+        <div style="display: flex; gap: 10px;">
+          <!-- رفع ملف من الذاكرة/المعرض بدون فتح الكاميرا تلقائياً -->
+          <label style="flex: 1; text-align: center; background: #0f172a; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; cursor: pointer; color: #94a3b8; font-size: 0.85rem; font-weight: bold;">
+            <i class="fa-solid fa-folder-open" style="color: #00d9ff;"></i> رفع من المعرض
+            <input type="file" id="qrFileInput" accept="image/*" onchange="scanQrFromImage(this)" style="display: none;">
+          </label>
+
+          <!-- زر تشغيل الكاميرا الحية -->
+          <button onclick="startLiveCameraScan()" style="flex: 1; background: #0f172a; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; cursor: pointer; color: #94a3b8; font-size: 0.85rem; font-weight: bold;">
+            <i class="fa-solid fa-camera" style="color: #2ed573;"></i> فتح الكاميرا
+          </button>
+        </div>
+
+        <!-- منطقة شاشة عرض الكاميرا الحية -->
+        <div id="qrCameraContainer" style="display: none; position: relative; text-align: center; background: #000; border-radius: 8px; overflow: hidden; border: 1px solid #00d9ff;">
+          <video id="qrVideo" style="width: 100%; max-height: 250px; object-fit: cover;"></video>
+          <button onclick="stopLiveCamera()" style="position: absolute; top: 8px; right: 8px; background: rgba(255, 71, 87, 0.8); color: #fff; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">إغلاق الكاميرا</button>
         </div>
 
         <!-- منطقة عرض وقراءة النتيجة -->
@@ -76,6 +94,8 @@ function switchQrTab(tab) {
   const genBtn = document.getElementById("qrTabGen");
   const scanBtn = document.getElementById("qrTabScan");
 
+  stopLiveCamera(); // إيقاف الكاميرا عند التنقل
+
   if (tab === 'gen') {
     genSec.style.display = "flex";
     scanSec.style.display = "none";
@@ -93,7 +113,7 @@ function switchQrTab(tab) {
   }
 }
 
-// دالة مساعد لتحميل المكتبات عند الحاجة
+// دالة تحميل مكتبات برمجية خارجيّة عند الحاجة
 function loadScript(src) {
   return new Promise((resolve, reject) => {
     if (document.querySelector(`script[src="${src}"]`)) return resolve();
@@ -117,13 +137,12 @@ async function generateQrCode() {
     return;
   }
 
-  // تحميل مكتبة QRCode.js ديناميكياً
   await loadScript("https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js");
 
   canvasBox.innerHTML = "";
   resultDiv.style.display = "block";
 
-  const qrcode = new QRCode(canvasBox, {
+  new QRCode(canvasBox, {
     text: text,
     width: 180,
     height: 180,
@@ -143,15 +162,15 @@ async function generateQrCode() {
   }, 300);
 }
 
-// قراءة رمز QR من الصورة أو الكاميرا
+// قراءة رمز QR من المعرض/الذاكرة
 async function scanQrFromImage(input) {
   const file = input.files[0];
   const resultDiv = document.getElementById("qrScanResult");
   const textDiv = document.getElementById("qrScanText");
 
   if (!file) return;
+  stopLiveCamera();
 
-  // تحميل مكتبة jsQR لتفكيك وقراءة الرمز
   await loadScript("https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js");
 
   const reader = new FileReader();
@@ -178,6 +197,57 @@ async function scanQrFromImage(input) {
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
+}
+
+// فتح وتشغيل الكاميرا الحية لقرائة QR مباشر
+async function startLiveCameraScan() {
+  const cameraContainer = document.getElementById("qrCameraContainer");
+  const video = document.getElementById("qrVideo");
+  const resultDiv = document.getElementById("qrScanResult");
+  const textDiv = document.getElementById("qrScanText");
+
+  await loadScript("https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js");
+
+  try {
+    qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    video.srcObject = qrStream;
+    video.setAttribute("playsinline", true);
+    video.play();
+    cameraContainer.style.display = "block";
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    qrVideoInterval = setInterval(() => {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+        if (code) {
+          resultDiv.style.display = "block";
+          textDiv.innerText = code.data;
+          stopLiveCamera(); // إيقاف الكاميرا بعد القراءة المباشرة بنجاح
+        }
+      }
+    }, 300);
+
+  } catch (err) {
+    alert("عذراً، متعذر الوصول للكاميرا: " + err.message);
+  }
+}
+
+// إيقاف تشغيل الكاميرا الحية
+function stopLiveCamera() {
+  if (qrVideoInterval) clearInterval(qrVideoInterval);
+  if (qrStream) {
+    qrStream.getTracks().forEach(track => track.stop());
+    qrStream = null;
+  }
+  const cameraContainer = document.getElementById("qrCameraContainer");
+  if (cameraContainer) cameraContainer.style.display = "none";
 }
 
 // نسخ النص المستخرج
