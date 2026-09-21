@@ -8,11 +8,11 @@
   <!-- CSS الرئيسي -->
   <link rel="stylesheet" href="css/style.css">
   
-  <!-- أيقونات FontAwesome -->
+  <!-- أيقونات FontAwesome المحدثة لتشغيل شعارات الماركات بشكل صحيح -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* تأثير غمض المؤشر أثناء الكتابة السريعة */
+    /* تأثير غمز المؤشر أثناء الكتابة السريعة */
     @keyframes blinkCursor {
       0%, 100% { opacity: 1; }
       50% { opacity: 0; }
@@ -92,7 +92,7 @@
           <div class="card-arrow"><i class="fa-solid fa-arrow-left"></i></div>
         </div>
 
-        <!-- أداة البريد المؤقت (تفتح بملء الشاشة) -->
+        <!-- أداة البريد المؤقت -->
         <div class="tool-card" onclick="openMailService()">
           <div class="card-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
           <div class="card-content">
@@ -122,9 +122,11 @@
           <div class="card-arrow"><i class="fa-solid fa-arrow-left"></i></div>
         </div>
 
-        <!-- أداة صانع التغريدات SHAR X -->
+        <!-- أداة صانع التغريدات (مع إظهار أيقونة X داخل المربع بشكل سليم) -->
         <div class="tool-card" onclick="openTweetMakerService()">
-          <div class="card-icon"><i class="fa-brands fa-x-twitter"></i></div>
+          <div class="card-icon">
+            <i class="fa-brands fa-x-twitter"></i>
+          </div>
           <div class="card-content">
             <h3>صانع التغريدات</h3>
             <p>إنشاء صور تغريدات منصة X وهمية باحترافية وسرعة</p>
@@ -181,7 +183,7 @@
         if (index < textToType.length) {
           typingElement.textContent += textToType.charAt(index);
           index++;
-          setTimeout(typeWriter, 35); // سرعة الكتابة مثل الكيبورد
+          setTimeout(typeWriter, 35);
         }
       }
 
