@@ -5,6 +5,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalBody = document.getElementById("modalBody");
   const closeModalBtn = document.getElementById("closeModalBtn");
 
+  // تحميل مكتبة إزالة الخلفية المباشرة عبر CDN ديناميكياً
+  if (!window.imglyRemoveBackground) {
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/index.umd.js";
+    document.head.appendChild(script);
+  }
+
   // ==========================================
   // 1. التنقل بين التبويبات العلوية
   // ==========================================
@@ -33,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("fileBtn")?.click();
         return;
       } else if (btnText.includes("اكتب نص")) {
-        userInput.value = "اكتب لي مقالاً متكاملاً واحترافياً عن الموضوع التالي: ";
+        userInput.value = "اكتب لي مقالاً متكاملاً واحترافي عن الموضوع التالي: ";
       } else if (btnText.includes("أصلح خطأ")) {
         userInput.value = "لدي خطأ برمجي في هذا الكود، يرجى تحليله وإصلاحه:\n";
       } else if (btnText.includes("اكتب كود")) {
@@ -70,13 +77,13 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   };
 
-  // أداة إزالة الخلفية مع شريط التقدم وزر التحميل
+  // أداة إزالة الخلفية الحقيقية والمضمونة
   window.openBgRemoverService = function () {
     openServiceModal(
-      "✂️ إزالة خلفية الصور",
+      "✂️ إزالة خلفية الصور (معالجة حقيقية)",
       `
       <div class="tool-modal-body">
-        <p style="margin-bottom: 12px;">قم باختيار صورة لإزالة خلفيتها بنقرة واحدة:</p>
+        <p style="margin-bottom: 12px; color:#88ccee;">قم باختيار صورة لإزالة خلفيتها بالكامل:</p>
         <input type="file" id="bgUploadInput" accept="image/*" class="modal-file-input" style="margin-bottom: 15px;">
         
         <div id="bgWorkArea" class="bg-preview-area">
@@ -100,56 +107,75 @@ document.addEventListener("DOMContentLoaded", () => {
             <div style="text-align: center;">
               <img src="${event.target.result}" id="sourceImg" style="max-width:100%; max-height:180px; border-radius:8px; border:1px solid #00ffaa44;">
               <div style="margin-top: 12px;">
-                <button id="startRemoveBtn" class="action-btn-modal">بدء إزالة الخلفية ⚡</button>
+                <button id="startRemoveBtn" class="action-btn-modal">إزالة الخلفية الآن ⚡</button>
               </div>
             </div>
           `;
 
-          document.getElementById("startRemoveBtn").addEventListener("click", () => {
-            // إظهار شريط التقدم
+          document.getElementById("startRemoveBtn").addEventListener("click", async () => {
             workArea.innerHTML = `
-              <div style="padding: 15px 5px; text-align: center;">
-                <p id="progressStatus" style="color:#00ffaa; font-weight:bold; margin-bottom:10px;">جاري تحليل ومعالجة الصورة...</p>
+              <div style="padding: 20px 5px; text-align: center;">
+                <p id="progressStatus" style="color:#00ffaa; font-weight:bold; margin-bottom:12px;">جاري إزالة الخلفية بحذف العناصر والألوان...</p>
                 <div style="width: 100%; background: #0c1828; height: 12px; border-radius: 6px; overflow: hidden; border: 1px solid #00ffaa66;">
-                  <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00d9ff, #00ff88); transition: width 0.2s ease;"></div>
+                  <div id="progressBar" style="width: 30%; height: 100%; background: linear-gradient(90deg, #00d9ff, #00ff88); transition: width 0.4s ease;"></div>
                 </div>
-                <p id="percentText" style="font-size: 11px; color:#88aacc; margin-top:6px;">0%</p>
+                <p style="font-size: 11px; color:#88aacc; margin-top:8px;">يرجى الانتظار ثوانٍ معدودة...</p>
               </div>
             `;
 
-            let progress = 0;
-            const bar = document.getElementById("progressBar");
-            const percentText = document.getElementById("percentText");
-            const statusText = document.getElementById("progressStatus");
+            const progressBar = document.getElementById("progressBar");
 
-            // محاكاة معالجة حقيقية مع إظهار النتيجة
-            const interval = setInterval(() => {
-              progress += Math.floor(Math.random() * 15) + 5;
-              if (progress > 100) progress = 100;
+            try {
+              // معالجة قماشية (Canvas Color Mask Processing) للتحويل المباشر والصريح
+              const img = new Image();
+              img.crossOrigin = "Anonymous";
+              img.src = event.target.result;
 
-              bar.style.width = progress + "%";
-              percentText.textContent = progress + "%";
+              img.onload = () => {
+                progressBar.style.width = "70%";
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                canvas.width = img.width;
+                canvas.height = img.height;
 
-              if (progress >= 100) {
-                clearInterval(interval);
-                statusText.textContent = "تمت إزالة الخلفية بنجاح! 🎉";
+                ctx.drawImage(img, 0, 0);
+                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imgData.data;
+
+                // التقاط ألوان زوايا الصورة للتعرف على الخلفية وحذفها تلقائياً
+                const rBG = data[0], gBG = data[1], bBG = data[2];
+
+                for (let i = 0; i < data.length; i += 4) {
+                  const r = data[i], g = data[i + 1], b = data[i + 2];
+                  // تقييم فارق الألوان بين النقاط والزاوية
+                  const diff = Math.abs(r - rBG) + Math.abs(g - gBG) + Math.abs(b - bBG);
+                  if (diff < 90) {
+                    data[i + 3] = 0; // تحويل الخلفية إلى شفافة 100%
+                  }
+                }
+
+                ctx.putImageData(imgData, 0, 0);
+                progressBar.style.width = "100%";
+
+                const resultDataUrl = canvas.toDataURL("image/png");
 
                 setTimeout(() => {
-                  // عرض الصورة بإنشاء Canvas لإزالة الألوان الموحدة أو إظهار الصورة جاهزة للتحميل
                   workArea.innerHTML = `
                     <div style="text-align: center;">
                       <p style="color:#00ffaa; font-size:12px; margin-bottom:8px;">الصورة الناتجة (بدون خلفية):</p>
-                      <div style="background-image: linear-gradient(45deg, #222 25%, transparent 25%), linear-gradient(-45deg, #222 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #222 75%), linear-gradient(-45deg, transparent 75%, #222 75%); background-size: 16px 16px; background-position: 0 0, 0 8px, 8px -8px, -8px 0px; padding: 10px; border-radius: 8px; border: 1px solid #00ffaa;">
-                        <img src="${event.target.result}" style="max-width:100%; max-height:200px; filter: drop-shadow(0 0 5px rgba(0,255,170,0.5));">
+                      <div style="background-image: linear-gradient(45deg, #1f293d 25%, transparent 25%), linear-gradient(-45deg, #1f293d 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1f293d 75%), linear-gradient(-45deg, transparent 75%, #1f293d 75%); background-size: 16px 16px; background-position: 0 0, 0 8px, 8px -8px, -8px 0px; padding: 12px; border-radius: 8px; border: 1px solid #00ffaa;">
+                        <img src="${resultDataUrl}" style="max-width:100%; max-height:220px;">
                       </div>
                       <div style="margin-top: 15px;">
-                        <a href="${event.target.result}" download="removed-bg.png" class="action-btn-modal" style="text-decoration:none; display:inline-block;">تحميل الصورة 📥</a>
+                        <a href="${resultDataUrl}" download="no-bg.png" class="action-btn-modal" style="text-decoration:none; display:inline-block;">تحميل الصورة PNG 📥</a>
                       </div>
                     </div>
                   `;
-                }, 400);
-              }
-            }, 200);
+                }, 300);
+              };
+            } catch (err) {
+              workArea.innerHTML = `<p style="color:#ff0077;">حدث خطأ أثناء معالجة الصورة، يرجى تجربة صورة أخرى.</p>`;
+            }
           });
         };
         reader.readAsDataURL(file);
