@@ -15,7 +15,7 @@ window.openDownloaderService = function () {
       </div>
 
       <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
-        ضع رابط الفيديو المباشر لجلب رابط التنزيل المباشر:
+        ضع رابط الفيديو واضغط على زر التحميل المباشر للبدء فوراً:
       </p>
 
       <!-- حقل إدخال الرابط -->
@@ -46,10 +46,11 @@ window.openDownloaderService = function () {
         <span id="platformName">المنصة: غير معروفة</span>
       </div>
 
-      <!-- أزرار المعالجة -->
+      <!-- أزرار التنزيل الفوري -->
       <div style="display: flex; gap: 10px; margin-top: 5px;">
         <button 
-          onclick="fetchDownloadLink('video')" 
+          id="downloadVideoBtn"
+          onclick="handleDirectBlobDownload('video')" 
           style="
             flex: 1; 
             padding: 12px; 
@@ -66,11 +67,12 @@ window.openDownloaderService = function () {
             font-size: 0.88rem;
           "
         >
-          <i class="fa-solid fa-video"></i> استخراج فيديو MP4
+          <i class="fa-solid fa-video"></i> تحميل فيديو MP4
         </button>
 
         <button 
-          onclick="fetchDownloadLink('audio')" 
+          id="downloadAudioBtn"
+          onclick="handleDirectBlobDownload('audio')" 
           style="
             flex: 1; 
             padding: 12px; 
@@ -87,12 +89,12 @@ window.openDownloaderService = function () {
             font-size: 0.88rem;
           "
         >
-          <i class="fa-solid fa-music"></i> استخراج صوت MP3
+          <i class="fa-solid fa-music"></i> تحميل صوت MP3
         </button>
       </div>
 
-      <!-- منطقة عرض زر التحميل النهائي المباشر -->
-      <div id="downloadResultArea" style="display: none; margin-top: 10px; flex-direction: column; gap: 8px;"></div>
+      <!-- حالة وحجم التحميل المباشر -->
+      <div id="downloaderStatus" style="display: none; margin-top: 10px; font-size: 0.85rem; color: var(--accent-green); background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;"></div>
 
     </div>
   `;
@@ -102,7 +104,7 @@ window.openDownloaderService = function () {
   }
 };
 
-// دالة التعرف التلقائي على اسم المنصة
+// التعرف على اسم المنصة
 window.detectPlatform = function () {
   const urlInput = document.getElementById("videoUrlInput");
   const badge = document.getElementById("platformBadge");
@@ -138,14 +140,14 @@ window.detectPlatform = function () {
   } else {
     icon.className = "fa-solid fa-globe";
     icon.style.color = "#00d9ff";
-    name.innerText = "رابط موقع/منصة عامة";
+    name.innerText = "رابط منصة عامة";
   }
 };
 
-// دالة جلب رابط التنزيل المباشر وعرض الزر النهائي
-window.fetchDownloadLink = async function (type) {
+// معالج التحميل المباشر لذاكرة الهاتف (Blob Direct Download)
+window.handleDirectBlobDownload = async function (formatType) {
   const urlInput = document.getElementById("videoUrlInput");
-  const resultArea = document.getElementById("downloadResultArea");
+  const status = document.getElementById("downloaderStatus");
   const videoUrl = urlInput ? urlInput.value.trim() : "";
 
   if (!videoUrl) {
@@ -153,77 +155,49 @@ window.fetchDownloadLink = async function (type) {
     return;
   }
 
-  resultArea.style.display = "flex";
-  resultArea.innerHTML = `
-    <div style="color: var(--accent-blue); font-size: 0.85rem;">
-      <i class="fa-solid fa-spinner fa-spin"></i> جاري جلب رابط التنزيل المباشر...
-    </div>
-  `;
+  status.style.display = "block";
+  status.style.color = "var(--accent-blue)";
+  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري استخراج وتنزيل ملف الـ ${formatType === 'video' ? 'فيديو' : 'صوت'} إلى الهاتف...`;
 
   try {
-    // محرك معالجة مباشر وسريع جداً
-    const apiUrl = `https://api.vkrdown.com/v4?url=${encodeURIComponent(videoUrl)}`;
-    const response = await fetch(apiUrl);
-    const data = await response.json();
-
-    let finalLink = "";
-    if (data && data.download) {
-      finalLink = data.download;
-    } else if (data && data.url) {
-      finalLink = data.url;
+    // 1. طلب الرابط المباشر للملف
+    const apiRes = await fetch(`https://api.vkrdown.com/v4?url=${encodeURIComponent(videoUrl)}`);
+    const apiData = await apiRes.json();
+    
+    let mediaFileUrl = "";
+    if (apiData && apiData.download) {
+      mediaFileUrl = apiData.download;
+    } else if (apiData && apiData.url) {
+      mediaFileUrl = apiData.url;
     } else {
-      // سيرفر احتياطي سريع للـ Facebook و TikTok
-      finalLink = `https://snapsave.app/download.php?url=${encodeURIComponent(videoUrl)}`;
+      mediaFileUrl = `https://saveas.co/download?url=${encodeURIComponent(videoUrl)}`;
     }
 
-    // عرض زر التنزيل المباشر الفوري
-    resultArea.innerHTML = `
-      <div style="font-size: 0.8rem; color: var(--accent-green); font-weight: bold;">
-        ✅ تم تجهيز الملف بنجاح!
-      </div>
-      <a href="${finalLink}" download target="_blank" style="text-decoration: none;">
-        <button style="
-          width: 100%; 
-          padding: 12px; 
-          background: #00ffaa; 
-          color: #000; 
-          font-weight: bold; 
-          border: none; 
-          border-radius: 8px; 
-          cursor: pointer; 
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          gap: 10px;
-          font-size: 0.95rem;
-          box-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
-        ">
-          <i class="fa-solid fa-download"></i> اضغط هنا لتنزيل ${type === 'video' ? 'الفيديو MP4' : 'الصوت MP3'} فوراً
-        </button>
-      </a>
-    `;
-  } catch (err) {
-    // الخيار المباشر المضمون عند حظر CORS
-    const directFallback = `https://ssyoutube.com/zh/102/download-page?url=${encodeURIComponent(videoUrl)}`;
-    resultArea.innerHTML = `
-      <a href="${directFallback}" target="_blank" style="text-decoration: none;">
-        <button style="
-          width: 100%; 
-          padding: 12px; 
-          background: var(--accent-blue); 
-          color: #000; 
-          font-weight: bold; 
-          border: none; 
-          border-radius: 8px; 
-          cursor: pointer; 
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          gap: 10px;
-        ">
-          <i class="fa-solid fa-download"></i> اضغط هنا لبدء التحميل المباشر
-        </button>
-      </a>
-    `;
+    // 2. تحويل الملف إلى Blob وبدء التحميل في الهاتف مباشرة
+    const fileRes = await fetch(mediaFileUrl);
+    const blob = await fileRes.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.href = blobUrl;
+    downloadAnchor.download = `Ali-K_${Date.now()}.${formatType === 'video' ? 'mp4' : 'mp3'}`;
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+
+    // تنظيف الذاكرة المؤقتة
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+
+    status.style.color = "var(--accent-green)";
+    status.innerHTML = `✅ تم تنزيل الـ ${formatType === 'video' ? 'فيديو' : 'صوت'} بنجاح لذاكرة الهاتف!`;
+  } catch (error) {
+    // حل بديل إجباري يفتح نافذة التحميل المباشرة بالمتصفح بدون خروج
+    status.style.color = "var(--accent-green)";
+    status.innerHTML = `✅ جاري بدء التنزيل المباشر عبر المتصفح...`;
+    
+    const fallbackLink = document.createElement("a");
+    fallbackLink.href = `https://ssyoutube.com/zh/102/download-page?url=${encodeURIComponent(videoUrl)}`;
+    fallbackLink.target = "_blank";
+    fallbackLink.click();
   }
 };
