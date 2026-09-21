@@ -85,15 +85,15 @@ window.openTweetMakerService = function () {
         style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: #04080c; color: #fff; font-size: 0.88rem; outline: none; resize: vertical;"
       >السلام عليكم ورحمة الله وبركاته</textarea>
 
-      <!-- زر التوليد -->
+      <!-- زر التوليد مع شعار X -->
       <button 
         id="generateTweetBtn"
         onclick="generateTweetImage()" 
         style="
           width: 100%; 
           padding: 12px; 
-          background: linear-gradient(135deg, #1da1f2, #0077ff); 
-          color: #fff; 
+          background: #fff; 
+          color: #000; 
           font-weight: bold; 
           border: none; 
           border-radius: 10px; 
@@ -106,7 +106,7 @@ window.openTweetMakerService = function () {
           margin-top: 4px;
         "
       >
-        <i class="fa-brands fa-x-twitter"></i> إنشاء صورة التغريدة
+        <i class="fa-brands fa-x-twitter" style="font-size: 1.1rem;"></i> إنشاء تغريدة X
       </button>
 
       <!-- حالة المعالجة -->
@@ -121,7 +121,9 @@ window.openTweetMakerService = function () {
         <!-- زر الإغلاق -->
         <button onclick="closeTweetPopup()" style="position: absolute; top: 10px; left: 12px; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 1.1rem; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
         
-        <h3 style="margin: 0 0 10px 0; font-size: 1rem; color: var(--accent-blue);">🎉 تم إنشاء التغريدة بنجاح</h3>
+        <h3 style="margin: 0 0 10px 0; font-size: 1rem; color: var(--accent-blue); display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <i class="fa-brands fa-x-twitter"></i> تم إنشاء التغريدة بنجاح
+        </h3>
         
         <!-- الصورة المولدة -->
         <img id="tweetPopupImg" src="" alt="Tweet Image" style="width: 100%; border-radius: 10px; border: 1px solid #2f3336; margin-bottom: 12px;" />
@@ -157,13 +159,13 @@ window.openTweetMakerService = function () {
   `;
 
   if (window.openServiceModal) {
-    window.openServiceModal("🐤 صانع التغريدات (Tweet Maker)", tweetHtml, false);
+    // تم تغيير عنوان النافذة لتتضمن شعار X
+    window.openServiceModal('<i class="fa-brands fa-x-twitter"></i> صانع تغريدات X', tweetHtml, false);
   }
 };
 
 window.selectedAvatarBase64 = null;
 
-// معالجة اختيار ملف الصورة من المعرض
 window.handleAvatarSelection = function (input) {
   if (input.files && input.files[0]) {
     const reader = new FileReader();
@@ -177,13 +179,11 @@ window.handleAvatarSelection = function (input) {
   }
 };
 
-// إغلاق النافذة المنبثقة للنتيجة
 window.closeTweetPopup = function () {
   const popup = document.getElementById("tweetPopupModal");
   if (popup) popup.style.display = "none";
 };
 
-// رسم التغريدة محلياً وتوليد الصورة
 window.generateTweetImage = async function () {
   const displayName = document.getElementById("tweetDisplayName").value.trim() || "Ali-K";
   const username = document.getElementById("tweetUsername").value.trim() || "Ali";
@@ -200,7 +200,7 @@ window.generateTweetImage = async function () {
 
   status.style.display = "block";
   status.style.color = "var(--accent-blue)";
-  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري تصميم التغريدة...`;
+  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري تصميم تغريدة X...`;
   btn.disabled = true;
   btn.style.opacity = "0.6";
 
@@ -210,7 +210,6 @@ window.generateTweetImage = async function () {
     canvas.height = 250;
     const ctx = canvas.getContext("2d");
 
-    // خلفية التغريدة (Dark Theme)
     ctx.fillStyle = "#000000";
     if (ctx.roundRect) {
       ctx.roundRect(0, 0, 600, 250, 16);
@@ -219,12 +218,10 @@ window.generateTweetImage = async function () {
     }
     ctx.fill();
 
-    // إطار للتغريدة
     ctx.strokeStyle = "#2f3336";
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // تحميل صورة البروفايل
     let avatarSrc = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
     if (window.selectedAvatarBase64) {
       avatarSrc = window.selectedAvatarBase64;
@@ -244,7 +241,6 @@ window.generateTweetImage = async function () {
       };
     });
 
-    // رسم صورة البروفايل دائرية
     ctx.save();
     ctx.beginPath();
     ctx.arc(540, 45, 24, 0, Math.PI * 2, true);
@@ -253,7 +249,6 @@ window.generateTweetImage = async function () {
     ctx.drawImage(avatarImg, 516, 21, 48, 48);
     ctx.restore();
 
-    // كتابة اسم العرض و اسم المستخدم
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 16px sans-serif";
     ctx.direction = "rtl";
@@ -266,7 +261,6 @@ window.generateTweetImage = async function () {
     ctx.textAlign = "left";
     ctx.fillText(`@${username} • Sep 21, 2026`, 300, 58);
 
-    // كتابة نص التغريدة
     ctx.fillStyle = "#e7e9ea";
     ctx.font = "18px sans-serif";
     ctx.direction = "rtl";
@@ -289,14 +283,12 @@ window.generateTweetImage = async function () {
     }
     ctx.fillText(line, 570, y);
 
-    // تفاعلات التغريدة الافتراضية
     ctx.fillStyle = "#71767b";
     ctx.font = "14px sans-serif";
     ctx.direction = "ltr";
     ctx.textAlign = "left";
     ctx.fillText("💬 69     🔁 69     ❤️ 6.9K     📊 100K", 40, 220);
 
-    // استخراج داتا الصورة وتغذيتها للنافذة المنبثقة
     const dataUrl = canvas.toDataURL("image/png");
     window.generatedTweetDataUrl = dataUrl;
 
@@ -319,15 +311,13 @@ window.generateTweetImage = async function () {
   }
 };
 
-// تنزيل الصورة
 window.downloadGeneratedTweet = function () {
   if (!window.generatedTweetDataUrl) return;
 
   const a = document.createElement("a");
   a.href = window.generatedTweetDataUrl;
-  a.download = `Tweet_${Date.now()}.png`;
+  a.download = `Tweet_X_${Date.now()}.png`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
 };
- 
