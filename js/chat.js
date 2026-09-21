@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   ];
 
-  // حقن تنسيقات CSS للتصميم المطابق للقطة الشاشة تلقائياً
+  // حقن تنسيقات CSS للتصميم الداكن والمطلوب
   const style = document.createElement('style');
   style.innerHTML = `
     .cyber-chat-container {
@@ -36,13 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
       padding-bottom: 8px;
       margin-bottom: 12px;
     }
-    .cyber-dots span {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-left: 3px;
-    }
     .cyber-chat-box {
       height: 420px;
       overflow-y: auto;
@@ -50,20 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
       flex-direction: column;
       gap: 12px;
       padding-right: 5px;
-    }
-    .msg-sys {
-      background: #111c26;
-      border: 1px solid #1e293b;
-      border-radius: 8px;
-      padding: 10px;
-      color: #94a3b8;
-      font-size: 0.85rem;
-    }
-    .msg-sys .tag {
-      color: #00ffaa;
-      font-weight: bold;
-      font-size: 0.7rem;
-      margin-bottom: 4px;
     }
     .msg-user {
       align-self: flex-end;
@@ -112,40 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
       color: #00ffaa;
       border-color: #00ffaa55;
     }
-    .cyber-input-area {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-      background: #091117;
-      padding: 6px;
-      border-radius: 8px;
-      border: 1px solid #1e293b;
-    }
-    .cyber-input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #fff;
-      padding: 8px;
-      font-size: 0.9rem;
-    }
-    .cyber-send-btn {
-      background: #00ffaa;
-      color: #05140c;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: 0.2s;
-    }
-    .cyber-send-btn:hover {
-      background: #00cc88;
-    }
   `;
   document.head.appendChild(style);
 
@@ -167,14 +112,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // دالة إرسال الرسالة وجلب الإجابة مع الذاكرة الكاملة
-  window.handleSendMessage = async function (inputEl, chatBoxEl) {
+  // دالة إرسال الرسالة وجلب الإجابة
+  window.handleSendMessage = async function () {
+    // جلب حقل النص وحاوية الرسائل أينما كانت في الواجهة
+    const inputEl = document.querySelector('input[type="text"], textarea, #userInput, #modalChatInput, .cyber-input');
+    const chatBoxEl = document.querySelector('#chat-box, #modalChatBox, .cyber-chat-box, .chat-messages');
+
     if (!inputEl || !chatBoxEl) return;
     
     const prompt = inputEl.value.trim();
     if (!prompt) return;
 
-    // 1. إضافة سؤال المستخدم إلى الشاشه والذاكرة
+    // 1. إضافة سؤال المستخدم إلى الشاشة والذاكرة
     const userDiv = document.createElement("div");
     userDiv.className = "msg-user";
     userDiv.innerHTML = `<div class="tag">YOU</div><div class="msg-content">${prompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
@@ -234,28 +183,26 @@ document.addEventListener("DOMContentLoaded", () => {
     chatBoxEl.scrollTop = chatBoxEl.scrollHeight;
   };
 
-  // ربط الأحداث تلقائياً بالأزرار ومفاتيح الإدخال
-  const triggerSend = () => {
-    const inputEl = document.getElementById('userInput') || document.getElementById('modalChatInput') || document.querySelector('.cyber-input');
-    const chatBoxEl = document.getElementById('chat-box') || document.getElementById('modalChatBox') || document.querySelector('.cyber-chat-box');
-    if (inputEl && chatBoxEl) {
-      window.handleSendMessage(inputEl, chatBoxEl);
-    }
-  };
-
+  // ==========================================
+  // التقاط حدث الضغط على أي زر إرسال أو مفتاح Enter
+  // ==========================================
   document.addEventListener('click', (e) => {
-    if (e.target && (e.target.id === 'sendBtn' || e.target.classList.contains('cyber-send-btn') || e.target.closest('.cyber-send-btn'))) {
+    // البحث عما إذا كان العنصر المضغوط عليه زر إرسال أو يحتوي على كلمة إرسال
+    const btn = e.target.closest('button, .send-btn, #sendBtn, #modalSendBtn, .cyber-send-btn');
+    if (btn) {
       e.preventDefault();
-      triggerSend();
+      window.handleSendMessage();
     }
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && (e.target.id === 'userInput' || e.target.classList.contains('cyber-input'))) {
-      e.preventDefault();
-      triggerSend();
+    if (e.key === 'Enter') {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+        e.preventDefault();
+        window.handleSendMessage();
+      }
     }
   });
 
 });
- 
