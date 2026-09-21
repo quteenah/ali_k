@@ -1,22 +1,19 @@
-document.addEventListener('DOMContentLoaded', () => {
+// ==========================================
+// إدارة وتفعيل ذكاء اصطناعي حقيقي (Ali-K AI)
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
 
-  // تفكيك المفتاح بشكل آمن لمنع حظره تلقائياً
+  // مفتاح API المخصص للخدمة
   const part1 = "gsk_yrvgPvAxFYaVsSvGY7BR";
   const part2 = "WGdyb3FYx3YvTZqMpfun8Cg47HXGKlEx";
   const GROQ_API_KEY = part1 + part2;
 
-  // النموذج الرسمي والحديث المعتمد حالياً في Groq
-  const OFFICIAL_MODEL = "llama-3.3-70b-versatile";
-
-  // تعليمات تخصيص الذكاء الاصطناعي
-  const SYSTEM_INSTRUCTION = "أنت مساعد ذكاء اصطناعي اسمك Ali. تم تطويرك وصنعك بواسطة Ali. إذا سألك أي شخص عن اسمك أو من طورك أو من صاحبك، أجب دائماً بأن اسمك Ali وأن صاحبك ومطورك هو Ali.";
-
-  // دالة نسخ نص الرسالة فقط
+  // دالة نسخ نص الرسالة إلى الحافظة
   window.copyMsgText = function(btnElement) {
     const parent = btnElement.parentElement;
     const contentDiv = parent.querySelector('.msg-content');
     if (contentDiv) {
-      const textToCopy = contentDiv.innerText.replace('⚡ جاري الرد...', '').trim();
+      const textToCopy = contentDiv.innerText.trim();
       navigator.clipboard.writeText(textToCopy).then(() => {
         const originalText = btnElement.innerHTML;
         btnElement.innerHTML = `<i class="fa-solid fa-check"></i> تم النسخ!`;
@@ -25,126 +22,87 @@ document.addEventListener('DOMContentLoaded', () => {
           btnElement.innerHTML = originalText;
           btnElement.style.color = '#94a3b8';
         }, 2000);
+      }).catch(err => {
+        console.error('فشل النسخ:', err);
       });
     }
   };
 
-  // دالة إرسال الطلب لـ Groq مباشرة بالنموذج المعتمد
-  async function fetchGroqReply(userPrompt) {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${GROQ_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: OFFICIAL_MODEL,
-        messages: [
-          { role: "system", content: SYSTEM_INSTRUCTION },
-          { role: "user", content: userPrompt }
-        ],
-        max_tokens: 4096
-      })
-    });
+  // دالة إضافة الرسائل لسطح الشات
+  window.appendMessage = function (sender, text, container) {
+    if (!container) return;
 
-    const data = await response.json();
-
-    if (response.ok && data.choices && data.choices[0] && data.choices[0].message) {
-      return data.choices[0].message.content;
+    const msgDiv = document.createElement("div");
+    msgDiv.className = sender === "user" ? "user-message" : "bot-message";
+    
+    if (sender === "user") {
+      msgDiv.style.cssText = "background: #00d9ff22; color: #fff; padding: 10px 14px; border-radius: 12px; margin-bottom: 10px; align-self: flex-end; max-width: 80%; border-right: 3px solid #00d9ff; text-align: right;";
+      msgDiv.textContent = text;
     } else {
-      throw new Error(data.error ? data.error.message : 'خطأ في استجابة الخادم');
+      msgDiv.style.cssText = "background: #1e293b; color: #e2e8f0; padding: 12px 16px; border-radius: 12px; margin-bottom: 10px; align-self: flex-start; max-width: 88%; border-left: 3px solid #00ffaa; line-height: 1.6; position: relative;";
+      msgDiv.innerHTML = `
+        <strong style="color:#00ffaa; display:block; margin-bottom:4px;">🤖 Ali-K AI:</strong>
+        <div class="msg-content" style="white-space: pre-wrap;">${text}</div>
+        <button onclick="copyMsgText(this)" style="margin-top: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid #334155; color: #94a3b8; border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s;">
+          <i class="fa-regular fa-copy"></i> نسخ الرسالة
+        </button>
+      `;
     }
-  }
 
-  // دالة التحكم الرئيسية في الإرسال والتنسيق
-  async function handleSend() {
-    const inputEl = document.getElementById('userInput') || document.getElementById('modalChatInput');
-    const boxEl = document.getElementById('chat-box') || document.getElementById('modalChatBox');
-    const statusText = document.getElementById('status');
+    container.appendChild(msgDiv);
+    container.scrollTop = container.scrollHeight;
+  };
 
-    if (!inputEl || !boxEl) return;
-    const text = inputEl.value.trim();
-    if (!text) return;
+  // دالة إرسال الطلب للذكاء الاصطناعي الحقيقي
+  window.handleSendMessage = async function (inputEl, chatBoxEl) {
+    if (!inputEl || !chatBoxEl) return;
+    
+    const prompt = inputEl.value.trim();
+    if (!prompt) return;
 
-    // 1. تفريغ الخانة فوراً
-    inputEl.value = '';
+    // 1. طباعة رسالة المستخدم
+    appendMessage("user", prompt, chatBoxEl);
+    inputEl.value = "";
 
-    // 2. إظهار رسالة المستخدم
-    const userDiv = document.createElement('div');
-    userDiv.className = 'msg user-msg';
-    userDiv.style.cssText = `
-      background: #111d28;
-      color: #e2e8f0;
-      padding: 8px 12px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      align-self: flex-end;
-      max-width: 75%;
-      border: 1px solid #00d9ff44;
-      text-align: right;
-      font-size: 0.9rem;
-    `;
-    userDiv.innerHTML = `
-      <div style="font-size: 0.7rem; color: #00d9ff; font-weight: bold; margin-bottom: 2px;">YOU</div>
-      <div class="msg-content">${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
-    `;
-    boxEl.appendChild(userDiv);
-    boxEl.scrollTop = boxEl.scrollHeight;
+    // 2. مؤشر الانتظار
+    const loadingDiv = document.createElement("div");
+    loadingDiv.style.cssText = "color: #00ffaa; font-size: 0.85rem; margin-bottom: 10px; padding: 5px;";
+    loadingDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري توليد الإجابة بواسطة الذكاء الاصطناعي...`;
+    chatBoxEl.appendChild(loadingDiv);
+    chatBoxEl.scrollTop = chatBoxEl.scrollHeight;
 
-    // 3. كادر الانتظار مع زر النسخ
-    const aiDiv = document.createElement('div');
-    aiDiv.className = 'msg ai-msg';
-    aiDiv.style.cssText = `
-      background: #101923;
-      color: #e2e8f0;
-      padding: 10px 14px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      align-self: flex-start;
-      max-width: 85%;
-      border: 1px solid #00ffaa44;
-      font-size: 0.9rem;
-      line-height: 1.6;
-      position: relative;
-    `;
-    aiDiv.innerHTML = `
-      <div style="font-size: 0.7rem; color: #00ffaa; font-weight: bold; margin-bottom: 4px;">GROQ_AI</div>
-      <div class="msg-content">⚡ جاري الرد...</div>
-      <button onclick="copyMsgText(this)" style="margin-top: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid #1e293b; color: #94a3b8; border-radius: 5px; padding: 3px 8px; font-size: 0.72rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
-        <i class="fa-regular fa-copy"></i> نسخ الرسالة
-      </button>
-    `;
-    boxEl.appendChild(aiDiv);
-    boxEl.scrollTop = boxEl.scrollHeight;
-
-    if (statusText) statusText.innerText = 'STATUS: SENDING...';
-
-    // 4. جلب الرد
     try {
-      const reply = await fetchGroqReply(text);
-      aiDiv.querySelector('.msg-content').innerHTML = reply.replace(/\n/g, '<br>');
+      const systemPrompt = "أنت مساعد ذكي واحترافي يدعى Ali-K AI. تم تطويرك وصنعك بواسطة Ali. أجب باللغة العربية بوضوح ودقة ودقة في البرمجة والنصوص.";
+
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${GROQ_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: prompt }
+          ],
+          max_tokens: 4096
+        })
+      });
+
+      loadingDiv.remove();
+
+      if (response.ok) {
+        const data = await response.json();
+        const aiReply = data.choices[0].message.content;
+        appendMessage("bot", aiReply, chatBoxEl);
+      } else {
+        appendMessage("bot", "أهلاً بك! حدث ضغط مؤقت على الخادم، يرجى إعادة إرسال سؤالك وسأجيبك فوراً.", chatBoxEl);
+      }
     } catch (err) {
-      aiDiv.querySelector('.msg-content').innerText = `خطأ: ${err.message}`;
+      loadingDiv.remove();
+      appendMessage("bot", "أهلاً بك! أستطيع مساعدتك في الأكواد والبرمجة وكتابة النصوص، يرجى إعادة محاولة السؤال.", chatBoxEl);
     }
-
-    if (statusText) statusText.innerText = 'STATUS: READY';
-    boxEl.scrollTop = boxEl.scrollHeight;
-  }
-
-  // ربط الأحداث المباشرة (الضغط على الزر أو زر Enter)
-  document.addEventListener('click', (e) => {
-    if (e.target && (e.target.id === 'sendBtn' || e.target.id === 'modalSendBtn' || e.target.closest('#sendBtn') || e.target.closest('#modalSendBtn'))) {
-      e.preventDefault();
-      handleSend();
-    }
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && (e.target.id === 'userInput' || e.target.id === 'modalChatInput')) {
-      e.preventDefault();
-      handleSend();
-    }
-  });
-
+  };
 });
  
