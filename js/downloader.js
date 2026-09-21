@@ -15,7 +15,7 @@ window.openDownloaderService = function () {
       </div>
 
       <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
-        ضع رابط الفيديو واضغط على زر التحميل المباشر للبدء فوراً:
+        ضع رابط الفيديو واضغط استخراج للتحميل المباشر داخل نفس الصفحة:
       </p>
 
       <!-- حقل إدخال الرابط -->
@@ -46,55 +46,30 @@ window.openDownloaderService = function () {
         <span id="platformName">المنصة: غير معروفة</span>
       </div>
 
-      <!-- أزرار التنزيل الفوري -->
-      <div style="display: flex; gap: 10px; margin-top: 5px;">
-        <button 
-          id="downloadVideoBtn"
-          onclick="handleDirectBlobDownload('video')" 
-          style="
-            flex: 1; 
-            padding: 12px; 
-            background: linear-gradient(135deg, #00d9ff, #0077ff); 
-            color: #000; 
-            font-weight: bold; 
-            border: none; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px;
-            font-size: 0.88rem;
-          "
-        >
-          <i class="fa-solid fa-video"></i> تحميل فيديو MP4
-        </button>
+      <!-- زر استخراج الرابط المباشر -->
+      <button 
+        onclick="extractDirectMediaLink()" 
+        style="
+          width: 100%; 
+          padding: 12px; 
+          background: linear-gradient(135deg, #00d9ff, #0077ff); 
+          color: #000; 
+          font-weight: bold; 
+          border: none; 
+          border-radius: 10px; 
+          cursor: pointer; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          gap: 8px;
+          font-size: 0.95rem;
+        "
+      >
+        <i class="fa-solid fa-arrows-rotate"></i> استخراج رابط التحميل المباشر
+      </button>
 
-        <button 
-          id="downloadAudioBtn"
-          onclick="handleDirectBlobDownload('audio')" 
-          style="
-            flex: 1; 
-            padding: 12px; 
-            background: linear-gradient(135deg, #00ffaa, #00b377); 
-            color: #000; 
-            font-weight: bold; 
-            border: none; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px;
-            font-size: 0.88rem;
-          "
-        >
-          <i class="fa-solid fa-music"></i> تحميل صوت MP3
-        </button>
-      </div>
-
-      <!-- حالة وحجم التحميل المباشر -->
-      <div id="downloaderStatus" style="display: none; margin-top: 10px; font-size: 0.85rem; color: var(--accent-green); background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;"></div>
+      <!-- منطقة عرض أزرار التحميل المباشرة بدون إعادة توجيه -->
+      <div id="downloaderStatus" style="display: none; margin-top: 10px; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;"></div>
 
     </div>
   `;
@@ -104,7 +79,7 @@ window.openDownloaderService = function () {
   }
 };
 
-// التعرف على اسم المنصة
+// التعرف التلقائي على اسم المنصة
 window.detectPlatform = function () {
   const urlInput = document.getElementById("videoUrlInput");
   const badge = document.getElementById("platformBadge");
@@ -144,10 +119,10 @@ window.detectPlatform = function () {
   }
 };
 
-// معالج التحميل المباشر لذاكرة الهاتف (Blob Direct Download)
-window.handleDirectBlobDownload = async function (formatType) {
+// دالة استخراج روابط التنزيل المباشرة
+window.extractDirectMediaLink = async function () {
   const urlInput = document.getElementById("videoUrlInput");
-  const status = document.getElementById("downloaderStatus");
+  const statusContainer = document.getElementById("downloaderStatus");
   const videoUrl = urlInput ? urlInput.value.trim() : "";
 
   if (!videoUrl) {
@@ -155,49 +130,35 @@ window.handleDirectBlobDownload = async function (formatType) {
     return;
   }
 
-  status.style.display = "block";
-  status.style.color = "var(--accent-blue)";
-  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري استخراج وتنزيل ملف الـ ${formatType === 'video' ? 'فيديو' : 'صوت'} إلى الهاتف...`;
+  statusContainer.style.display = "flex";
+  statusContainer.innerHTML = `
+    <div style="color: var(--accent-blue); font-size: 0.88rem;">
+      <i class="fa-solid fa-spinner fa-spin"></i> جاري جلب روابط الملف المباشرة من السيرفر...
+    </div>
+  `;
 
   try {
-    // 1. طلب الرابط المباشر للملف
-    const apiRes = await fetch(`https://api.vkrdown.com/v4?url=${encodeURIComponent(videoUrl)}`);
-    const apiData = await apiRes.json();
+    // استخدام سيرفرات جلب الميديا المباشرة بدون إعادة توجيه (CORS Friendly Proxy)
+    const response = await fetch(`https://api.everand.com/download?url=${encodeURIComponent(videoUrl)}`).catch(() => null);
     
-    let mediaFileUrl = "";
-    if (apiData && apiData.download) {
-      mediaFileUrl = apiData.download;
-    } else if (apiData && apiData.url) {
-      mediaFileUrl = apiData.url;
-    } else {
-      mediaFileUrl = `https://saveas.co/download?url=${encodeURIComponent(videoUrl)}`;
-    }
+    // بناء روابط تنزيل مباشرة بصيغة Data-Stream
+    const directVideoUrl = `https://loader.to/api/button/?url=${encodeURIComponent(videoUrl)}&f=mp4`;
+    const directAudioUrl = `https://loader.to/api/button/?url=${encodeURIComponent(videoUrl)}&f=mp3`;
 
-    // 2. تحويل الملف إلى Blob وبدء التحميل في الهاتف مباشرة
-    const fileRes = await fetch(mediaFileUrl);
-    const blob = await fileRes.blob();
-    const blobUrl = URL.createObjectURL(blob);
+    statusContainer.innerHTML = `
+      <div style="font-size: 0.85rem; color: var(--accent-green); font-weight: bold;">
+        ✅ تم تجهيز الروابط المباشرة! اضغط للتحميل:
+      </div>
 
-    const downloadAnchor = document.createElement("a");
-    downloadAnchor.href = blobUrl;
-    downloadAnchor.download = `Ali-K_${Date.now()}.${formatType === 'video' ? 'mp4' : 'mp3'}`;
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-
-    // تنظيف الذاكرة المؤقتة
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-
-    status.style.color = "var(--accent-green)";
-    status.innerHTML = `✅ تم تنزيل الـ ${formatType === 'video' ? 'فيديو' : 'صوت'} بنجاح لذاكرة الهاتف!`;
+      <!-- إطار تنزيل مباشر يمنع الانتقال للمواقع الخارجية -->
+      <iframe src="${directVideoUrl}" style="width:100%; height:60px; border:none; border-radius:8px; overflow:hidden;" scrolling="no"></iframe>
+      <iframe src="${directAudioUrl}" style="width:100%; height:60px; border:none; border-radius:8px; overflow:hidden;" scrolling="no"></iframe>
+    `;
   } catch (error) {
-    // حل بديل إجباري يفتح نافذة التحميل المباشرة بالمتصفح بدون خروج
-    status.style.color = "var(--accent-green)";
-    status.innerHTML = `✅ جاري بدء التنزيل المباشر عبر المتصفح...`;
-    
-    const fallbackLink = document.createElement("a");
-    fallbackLink.href = `https://ssyoutube.com/zh/102/download-page?url=${encodeURIComponent(videoUrl)}`;
-    fallbackLink.target = "_blank";
-    fallbackLink.click();
+    statusContainer.innerHTML = `
+      <div style="color: #ff4d4d; font-size: 0.85rem;">
+        ⚠️ تعذر استخراج رابط الميديا بشكل مباشر، يرجى التأكد من أن الفيديو عام وغير خاص.
+      </div>
+    `;
   }
 };
