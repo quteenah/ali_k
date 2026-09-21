@@ -143,9 +143,10 @@ window.uploadImageToLink = async function () {
 
   try {
     const formData = new FormData();
-    formData.append('files[]', file, file.name || 'image.jpg');
+    formData.append('file', file);
 
-    const response = await fetch('https://qu.ax/upload.php', {
+    // رفع الملف إلى tmpfiles API الداعم للرفع من المتصفح مباشرة
+    const response = await fetch('https://tmpfiles.org/api/v1/upload', {
       method: 'POST',
       body: formData
     });
@@ -154,11 +155,14 @@ window.uploadImageToLink = async function () {
 
     const data = await response.json();
 
-    if (data && data.files && data.files.length > 0) {
+    if (data && data.status === "success" && data.data && data.data.url) {
+      // تحويل الرابط إلى رابط مباشر للمعاينة والتحميل
+      const directUrl = data.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+
       status.style.color = "var(--accent-green)";
       status.innerHTML = `✅ تم رفع الصورة بنجاح!`;
 
-      linkInput.value = data.files[0].url;
+      linkInput.value = directUrl;
       resultArea.style.display = "flex";
     } else {
       throw new Error("استجابة غير صحيحة");
@@ -179,3 +183,4 @@ window.copyImgLink = function () {
   navigator.clipboard.writeText(linkInput.value);
   alert("تم نسخ رابط الصورة بنجاح! 📋");
 };
+ 
