@@ -46,12 +46,12 @@
           <div class="card-icon"><i class="fa-solid fa-comments"></i></div>
           <div class="card-content">
             <h3>شات الذكاء الاصطناعي</h3>
-            <p>محادثة ذكية وحقيقية للإجابة على جميع الأسئلة والبرمجة</p>
+            <p>محادثة ذكية وسريعة للإجابة على جميع الأسئلة والبرمجة</p>
           </div>
           <div class="card-arrow"><i class="fa-solid fa-arrow-left"></i></div>
         </div>
 
-        <!-- أداة البريد المؤقت -->
+        <!-- أداة البريد المؤقت (تفتح بملء الشاشة) -->
         <div class="tool-card" onclick="openMailService()">
           <div class="card-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
           <div class="card-content">
@@ -88,7 +88,7 @@
 
   <!-- النافذة المنبثقة للأدوات (Modal Container) -->
   <div class="modal-overlay" id="modalContainer" style="display: none;">
-    <div class="modal-card">
+    <div class="modal-card" id="modalCard">
       <div class="modal-header">
         <h3 id="modalTitle">عنوان الأداة</h3>
         <button class="close-btn" id="closeModalBtn">&times;</button>
