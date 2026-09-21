@@ -7,11 +7,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatHistory = [
     {
       role: "system",
-      content: "أنت مساعد ذكي واحترافي اسمك AI وتم تطويرك وصنعك بواسطة علي (Ali). أجب باللغة العربية بوضوح ودقة عالية، وقم بإجابة كافة الأسئلة والطلبات البرمجية والشروحات بدون امتناع."
+      content: "أنت مساعد ذكي واحترافي اسمك AI وتم تطويرك وصنعك بواسطة علي (Ali). أجب باللغة العربية بوضوح ودقة عالية وبإيجاز وسرعة."
     }
   ];
 
-  // حقن تنسيقات CSS للتصميم الداكن والمطلوب
+  // حقن تنسيقات CSS للتصميم الداكن
   const style = document.createElement('style');
   style.innerHTML = `
     .cyber-chat-container {
@@ -112,9 +112,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // دالة إرسال الرسالة وجلب الإجابة
+  // دالة إرسال الرسالة وجلب الإجابة بسرعة عالية
   window.handleSendMessage = async function () {
-    // جلب حقل النص وحاوية الرسائل أينما كانت في الواجهة
     const inputEl = document.querySelector('input[type="text"], textarea, #userInput, #modalChatInput, .cyber-input');
     const chatBoxEl = document.querySelector('#chat-box, #modalChatBox, .cyber-chat-box, .chat-messages');
 
@@ -123,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const prompt = inputEl.value.trim();
     if (!prompt) return;
 
-    // 1. إضافة سؤال المستخدم إلى الشاشة والذاكرة
+    // 1. إضافة سؤال المستخدم
     const userDiv = document.createElement("div");
     userDiv.className = "msg-user";
     userDiv.innerHTML = `<div class="tag">YOU</div><div class="msg-content">${prompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
@@ -140,13 +139,13 @@ document.addEventListener("DOMContentLoaded", () => {
     chatBoxEl.scrollTop = chatBoxEl.scrollHeight;
 
     try {
-      // إرسال الذاكرة الكاملة للسيرفر
+      // تم تغيير النموذج إلى llama لضمان الاستجابة السريعة جداً
       const response = await fetch("https://text.pollinations.ai/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: chatHistory,
-          model: "openai"
+          model: "llama"
         })
       });
 
@@ -155,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response.ok) {
         const aiReply = await response.text();
         
-        // حفظ رد الذكاء الاصطناعي في الذاكرة للسؤال القادم
+        // حفظ الرد في السجل
         chatHistory.push({ role: "assistant", content: aiReply });
 
         const aiDiv = document.createElement("div");
@@ -183,11 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
     chatBoxEl.scrollTop = chatBoxEl.scrollHeight;
   };
 
-  // ==========================================
-  // التقاط حدث الضغط على أي زر إرسال أو مفتاح Enter
-  // ==========================================
+  // التقاط حدث الضغط على الإرسال أو Enter
   document.addEventListener('click', (e) => {
-    // البحث عما إذا كان العنصر المضغوط عليه زر إرسال أو يحتوي على كلمة إرسال
     const btn = e.target.closest('button, .send-btn, #sendBtn, #modalSendBtn, .cyber-send-btn');
     if (btn) {
       e.preventDefault();
@@ -206,3 +202,4 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+ 
