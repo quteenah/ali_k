@@ -8,7 +8,7 @@
   <!-- CSS الرئيسي -->
   <link rel="stylesheet" href="css/style.css">
   
-  <!-- أيقونات FontAwesome المحدثة لتشغيل شعارات الماركات بشكل صحيح -->
+  <!-- أيقونات FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
@@ -122,10 +122,12 @@
           <div class="card-arrow"><i class="fa-solid fa-arrow-left"></i></div>
         </div>
 
-        <!-- أداة صانع التغريدات (مع إظهار أيقونة X داخل المربع بشكل سليم) -->
+        <!-- أداة صانع التغريدات (شعار SVG مباشر لمنصة X) -->
         <div class="tool-card" onclick="openTweetMakerService()">
-          <div class="card-icon">
-            <i class="fa-brands fa-x-twitter"></i>
+          <div class="card-icon" style="display: flex; align-items: center; justify-content: center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#00d9ff" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
           </div>
           <div class="card-content">
             <h3>صانع التغريدات</h3>
