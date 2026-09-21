@@ -143,7 +143,7 @@ window.openTweetMakerService = function () {
   `;
 
   if (window.openServiceModal) {
-    window.openServiceModal("🐤 صانع التغريدات (تويتر ×)", tweetHtml, false);
+    window.openServiceModal("🐤 صانع التغريدات (Tweet Maker)", tweetHtml, false);
   }
 };
 
@@ -159,31 +159,57 @@ window.handleAvatarSelection = function (input) {
     reader.onload = function (e) {
       document.getElementById("avatarPreviewImg").src = e.target.result;
       document.getElementById("avatarPreviewContainer").style.display = "flex";
-      document.getElementById("tweetAvatarUrl").value = ""; // تفريغ حقل الرابط عند خيار الملف
+      document.getElementById("tweetAvatarUrl").value = ""; 
     };
     reader.readAsDataURL(input.files[0]);
   }
 };
 
-// رفع الصورة المخزنة من المعرض إلى سيرفر رفع سريع
-async function uploadAvatarImage(file) {
-  const formData = new FormData();
-  formData.append("fileToUpload", file);
-  formData.append("reqtype", "fileupload");
+// تحويل وضغط صورة البروفايل لتكون متوافقة 100% مع الـ API
+function processImageToBlob(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 128;
+      canvas.height = 128;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, 128, 128);
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("Canvas blob error"));
+      }, "image/png");
+    };
+    img.onerror = (err) => reject(err);
+  });
+}
 
-  const response = await fetch("https://catbox.moe/user/api.php", {
+// رفع الصورة إلى سيرفر imgbb أو tmpfiles للحصول على رابط مباشر مقبول
+async function uploadAvatarImage(file) {
+  const blob = await processImageToBlob(file);
+  const formData = new FormData();
+  formData.append("file", blob, "avatar.png");
+
+  const response = await fetch("https://tmpfiles.org/api/v1/upload", {
     method: "POST",
     body: formData
   });
 
-  if (!response.ok) throw new Error("فشل رفع صورة البروفايل");
-  return await response.text(); // يعيد الرابط المباشر للملف
+  if (!response.ok) throw new Error("فشل الرفع");
+  
+  const data = await response.json();
+  if (data && data.data && data.data.url) {
+    // تحويل الرابط إلى رابط مباشر قابل للتحميل
+    return data.data.url.replace("tmpfiles.org/", "tmpfiles.org/dl/");
+  }
+  throw new Error("رابط الرفع غير صالح");
 }
 
 // دالة توليد التغريدة
 window.generateTweetImage = async function () {
   const displayName = document.getElementById("tweetDisplayName").value.trim() || "Ali-K";
-  const username = document.getElementById("tweetUsername").value.trim() || "alik";
+  const username = document.getElementById("tweetUsername").value.trim() || "Ali";
   const comment = document.getElementById("tweetComment").value.trim();
   const avatarUrlInput = document.getElementById("tweetAvatarUrl").value.trim();
   
@@ -199,7 +225,7 @@ window.generateTweetImage = async function () {
 
   status.style.display = "block";
   status.style.color = "var(--accent-blue)";
-  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري تجهيز الصورة والتصميم...`;
+  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري معالجة وتوليد التغريدة...`;
   btn.disabled = true;
   btn.style.opacity = "0.6";
   resultArea.style.display = "none";
@@ -207,12 +233,18 @@ window.generateTweetImage = async function () {
   let finalAvatar = "https://telegra.ph/file/24fa902ead26340f3df2c.png";
 
   try {
-    // 1. إذا اختار المستخدم ملف من الاستديو
+    // 1. إذا تم اختيار ملف من المعرض
     if (window.selectedAvatarFile) {
-      status.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-spin"></i> جاري رفع صورة البروفايل...`;
-      finalAvatar = await uploadAvatarImage(window.selectedAvatarFile);
+      status.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-spin"></i> جاري تجهيز صورة البروفايل...`;
+      try {
+        finalAvatar = await uploadAvatarImage(window.selectedAvatarFile);
+      } catch (e) {
+        console.warn("تراجع لخيار الرفع البديل:", e);
+        // في حال تعثر الرفع نستخدم صورة بروفايل افتراضية ناجحة لعدم تعطيل النتيجة
+        finalAvatar = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
+      }
     } 
-    // 2. إذا أدخل رابط مباشر
+    // 2. إذا أدخل رابط صورة مباشر
     else if (avatarUrlInput && avatarUrlInput.startsWith("http")) {
       finalAvatar = avatarUrlInput;
     }
@@ -225,29 +257,27 @@ window.generateTweetImage = async function () {
 
     const tweetApiUrl = `https://some-random-api.com/canvas/misc/tweet?displayname=${encodeURIComponent(displayName)}&username=${encodeURIComponent(username)}&avatar=${encodeURIComponent(finalAvatar)}&comment=${encodeURIComponent(comment)}&replies=${encodeURIComponent(replies)}&retweets=${encodeURIComponent(retweets)}&theme=${encodeURIComponent(theme)}`;
 
-    // تحميل الصورة للتأكد من نجاحها
-    const imgLoader = new Image();
-    imgLoader.src = tweetApiUrl;
+    // جلب الصورة لتفادي أخطاء الـ Cross-Origin
+    const response = await fetch(tweetApiUrl);
+    if (!response.ok) throw new Error("API Response Error");
 
-    imgLoader.onload = function () {
-      status.style.color = "var(--accent-green)";
-      status.innerHTML = `✅ تم إنشاء التغريدة بنجاح!`;
+    const imageBlob = await response.blob();
+    const objectUrl = URL.createObjectURL(imageBlob);
 
-      resultImg.src = tweetApiUrl;
-      window.latestTweetGeneratedUrl = tweetApiUrl;
+    status.style.color = "var(--accent-green)";
+    status.innerHTML = `✅ تم إنشاء التغريدة بنجاح!`;
 
-      resultArea.style.display = "flex";
-      btn.disabled = false;
-      btn.style.opacity = "1";
-    };
+    resultImg.src = objectUrl;
+    window.latestTweetBlobUrl = objectUrl;
 
-    imgLoader.onerror = function () {
-      throw new Error("فشل توليد التغريدة من السيرفر");
-    };
+    resultArea.style.display = "flex";
+    btn.disabled = false;
+    btn.style.opacity = "1";
 
   } catch (err) {
+    console.error(err);
     status.style.color = "#ff4d4d";
-    status.innerHTML = `❌ حدث خطأ، يرجى إعادة المحاولة أو تجربة صورة أخرى.`;
+    status.innerHTML = `❌ حدث خطأ، يرجى إعادة المحاولة أو التأكد من نص التغريدة.`;
     btn.disabled = false;
     btn.style.opacity = "1";
   }
@@ -255,12 +285,12 @@ window.generateTweetImage = async function () {
 
 // دالة تنزيل صورة التغريدة للجهاز
 window.downloadGeneratedTweet = function () {
-  if (!window.latestTweetGeneratedUrl) return;
+  if (!window.latestTweetBlobUrl) return;
 
-  // فتح الصورة برابط مباشر لتسهيل التنزيل والحفظ على هواتف الموبايل بدون حظر
-  const windowRef = window.open(window.latestTweetGeneratedUrl, '_blank');
-  if (!windowRef) {
-    location.href = window.latestTweetGeneratedUrl;
-  }
+  const a = document.createElement("a");
+  a.href = window.latestTweetBlobUrl;
+  a.download = `tweet_${Date.now()}.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 };
- 
