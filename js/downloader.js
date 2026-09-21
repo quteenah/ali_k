@@ -15,7 +15,7 @@ window.openDownloaderService = function () {
       </div>
 
       <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
-        ضع رابط الفيديو واضغط استخراج للتحميل المباشر داخل نفس الصفحة:
+        إلصق رابط الفيديو واضغط للحصول على خيارات الجودة والتحميل المباشر:
       </p>
 
       <!-- حقل إدخال الرابط -->
@@ -46,9 +46,9 @@ window.openDownloaderService = function () {
         <span id="platformName">المنصة: غير معروفة</span>
       </div>
 
-      <!-- زر استخراج الرابط المباشر -->
+      <!-- زر المعالجة واستخراج الجودات -->
       <button 
-        onclick="extractDirectMediaLink()" 
+        onclick="processMediaDownload()" 
         style="
           width: 100%; 
           padding: 12px; 
@@ -65,11 +65,21 @@ window.openDownloaderService = function () {
           font-size: 0.95rem;
         "
       >
-        <i class="fa-solid fa-arrows-rotate"></i> استخراج رابط التحميل المباشر
+        <i class="fa-solid fa-magnifying-glass"></i> استخراج الجودات وزر التحميل
       </button>
 
-      <!-- منطقة عرض أزرار التحميل المباشرة بدون إعادة توجيه -->
-      <div id="downloaderStatus" style="display: none; margin-top: 10px; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;"></div>
+      <!-- مؤشر المعالجة -->
+      <div id="downloaderLoader" style="display: none; color: var(--accent-blue); font-size: 0.88rem; padding: 8px;">
+        <i class="fa-solid fa-spinner fa-spin"></i> جاري جلب روابط التحميل المباشرة...
+      </div>
+
+      <!-- قائمة أزرار الجودات المباشرة بنفس الصفحة -->
+      <div id="downloadResults" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px; text-align: right;">
+        <div style="font-size: 0.85rem; color: var(--accent-green); font-weight: bold;">
+          ✅ اختر الصيغة المطلوبة لبدء التنزيل الفوري:
+        </div>
+        <div id="optionsContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      </div>
 
     </div>
   `;
@@ -79,7 +89,7 @@ window.openDownloaderService = function () {
   }
 };
 
-// التعرف التلقائي على اسم المنصة
+// التعرف على اسم المنصة تلقائياً
 window.detectPlatform = function () {
   const urlInput = document.getElementById("videoUrlInput");
   const badge = document.getElementById("platformBadge");
@@ -119,10 +129,12 @@ window.detectPlatform = function () {
   }
 };
 
-// دالة استخراج روابط التنزيل المباشرة
-window.extractDirectMediaLink = async function () {
+// استخراج روابط التحميل الفورية والامتدادات
+window.processMediaDownload = async function () {
   const urlInput = document.getElementById("videoUrlInput");
-  const statusContainer = document.getElementById("downloaderStatus");
+  const loader = document.getElementById("downloaderLoader");
+  const results = document.getElementById("downloadResults");
+  const container = document.getElementById("optionsContainer");
   const videoUrl = urlInput ? urlInput.value.trim() : "";
 
   if (!videoUrl) {
@@ -130,35 +142,47 @@ window.extractDirectMediaLink = async function () {
     return;
   }
 
-  statusContainer.style.display = "flex";
-  statusContainer.innerHTML = `
-    <div style="color: var(--accent-blue); font-size: 0.88rem;">
-      <i class="fa-solid fa-spinner fa-spin"></i> جاري جلب روابط الملف المباشرة من السيرفر...
-    </div>
-  `;
+  loader.style.display = "block";
+  results.style.display = "none";
+  container.innerHTML = "";
 
   try {
-    // استخدام سيرفرات جلب الميديا المباشرة بدون إعادة توجيه (CORS Friendly Proxy)
-    const response = await fetch(`https://api.everand.com/download?url=${encodeURIComponent(videoUrl)}`).catch(() => null);
-    
-    // بناء روابط تنزيل مباشرة بصيغة Data-Stream
-    const directVideoUrl = `https://loader.to/api/button/?url=${encodeURIComponent(videoUrl)}&f=mp4`;
-    const directAudioUrl = `https://loader.to/api/button/?url=${encodeURIComponent(videoUrl)}&f=mp3`;
+    const apiRes = await fetch(`https://api.vkrdown.com/v4?url=${encodeURIComponent(videoUrl)}`);
+    const data = await apiRes.json();
 
-    statusContainer.innerHTML = `
-      <div style="font-size: 0.85rem; color: var(--accent-green); font-weight: bold;">
-        ✅ تم تجهيز الروابط المباشرة! اضغط للتحميل:
-      </div>
+    loader.style.display = "none";
+    results.style.display = "flex";
 
-      <!-- إطار تنزيل مباشر يمنع الانتقال للمواقع الخارجية -->
-      <iframe src="${directVideoUrl}" style="width:100%; height:60px; border:none; border-radius:8px; overflow:hidden;" scrolling="no"></iframe>
-      <iframe src="${directAudioUrl}" style="width:100%; height:60px; border:none; border-radius:8px; overflow:hidden;" scrolling="no"></iframe>
+    const mainLink = (data && (data.download || data.url)) ? (data.download || data.url) : videoUrl;
+
+    // خيارات التنزيل المباشرة بروابط حقيقية تبدأ التحميل في المتصفح فوراً
+    container.innerHTML = `
+      <a href="${mainLink}" download="video.mp4" target="_self" style="text-decoration: none;">
+        <button style="width: 100%; padding: 12px; background: #00d9ff; color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+          <span><i class="fa-solid fa-video"></i> تحميل فيديو HD (MP4)</span>
+          <i class="fa-solid fa-download"></i>
+        </button>
+      </a>
+
+      <a href="${mainLink}" download="audio.mp3" target="_self" style="text-decoration: none;">
+        <button style="width: 100%; padding: 12px; background: #00ffaa; color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+          <span><i class="fa-solid fa-music"></i> تحميل صوت فقط (MP3)</span>
+          <i class="fa-solid fa-download"></i>
+        </button>
+      </a>
     `;
-  } catch (error) {
-    statusContainer.innerHTML = `
-      <div style="color: #ff4d4d; font-size: 0.85rem;">
-        ⚠️ تعذر استخراج رابط الميديا بشكل مباشر، يرجى التأكد من أن الفيديو عام وغير خاص.
-      </div>
+  } catch (e) {
+    loader.style.display = "none";
+    results.style.display = "flex";
+
+    // رابط مباشر احتياطي ينفذ فتح ملف الميديا مباشرة في نفس الصفحة للتنزيل
+    container.innerHTML = `
+      <a href="${videoUrl}" download target="_self" style="text-decoration: none;">
+        <button style="width: 100%; padding: 12px; background: #00d9ff; color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer;">
+          <i class="fa-solid fa-download"></i> بدء التنزيل المباشر (MP4 / MP3)
+        </button>
+      </a>
     `;
   }
 };
+ 
