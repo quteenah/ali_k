@@ -147,16 +147,14 @@ window.openTweetMakerService = function () {
   }
 };
 
-window.selectedAvatarFile = null;
+window.selectedAvatarBase64 = null;
 
 // معالجة اختيار ملف الصورة من المعرض
 window.handleAvatarSelection = function (input) {
   if (input.files && input.files[0]) {
-    window.selectedAvatarFile = input.files[0];
-    
-    // عرض المعاينة
     const reader = new FileReader();
     reader.onload = function (e) {
+      window.selectedAvatarBase64 = e.target.result;
       document.getElementById("avatarPreviewImg").src = e.target.result;
       document.getElementById("avatarPreviewContainer").style.display = "flex";
       document.getElementById("tweetAvatarUrl").value = ""; 
@@ -165,48 +163,7 @@ window.handleAvatarSelection = function (input) {
   }
 };
 
-// تحويل وضغط صورة البروفايل لتكون متوافقة 100% مع الـ API
-function processImageToBlob(file) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = 128;
-      canvas.height = 128;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, 128, 128);
-      canvas.toBlob((blob) => {
-        if (blob) resolve(blob);
-        else reject(new Error("Canvas blob error"));
-      }, "image/png");
-    };
-    img.onerror = (err) => reject(err);
-  });
-}
-
-// رفع الصورة إلى سيرفر imgbb أو tmpfiles للحصول على رابط مباشر مقبول
-async function uploadAvatarImage(file) {
-  const blob = await processImageToBlob(file);
-  const formData = new FormData();
-  formData.append("file", blob, "avatar.png");
-
-  const response = await fetch("https://tmpfiles.org/api/v1/upload", {
-    method: "POST",
-    body: formData
-  });
-
-  if (!response.ok) throw new Error("فشل الرفع");
-  
-  const data = await response.json();
-  if (data && data.data && data.data.url) {
-    // تحويل الرابط إلى رابط مباشر قابل للتحميل
-    return data.data.url.replace("tmpfiles.org/", "tmpfiles.org/dl/");
-  }
-  throw new Error("رابط الرفع غير صالح");
-}
-
-// دالة توليد التغريدة
+// رسم التغريدة محلياً باستخدام Canvas المتصفح
 window.generateTweetImage = async function () {
   const displayName = document.getElementById("tweetDisplayName").value.trim() || "Ali-K";
   const username = document.getElementById("tweetUsername").value.trim() || "Ali";
@@ -225,71 +182,125 @@ window.generateTweetImage = async function () {
 
   status.style.display = "block";
   status.style.color = "var(--accent-blue)";
-  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري معالجة وتوليد التغريدة...`;
+  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري تصميم التغريدة...`;
   btn.disabled = true;
   btn.style.opacity = "0.6";
   resultArea.style.display = "none";
 
-  let finalAvatar = "https://telegra.ph/file/24fa902ead26340f3df2c.png";
-
   try {
-    // 1. إذا تم اختيار ملف من المعرض
-    if (window.selectedAvatarFile) {
-      status.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-spin"></i> جاري تجهيز صورة البروفايل...`;
-      try {
-        finalAvatar = await uploadAvatarImage(window.selectedAvatarFile);
-      } catch (e) {
-        console.warn("تراجع لخيار الرفع البديل:", e);
-        // في حال تعثر الرفع نستخدم صورة بروفايل افتراضية ناجحة لعدم تعطيل النتيجة
-        finalAvatar = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
-      }
-    } 
-    // 2. إذا أدخل رابط صورة مباشر
-    else if (avatarUrlInput && avatarUrlInput.startsWith("http")) {
-      finalAvatar = avatarUrlInput;
+    const canvas = document.createElement("canvas");
+    canvas.width = 600;
+    canvas.height = 250;
+    const ctx = canvas.getContext("2d");
+
+    // خلفية التغريدة (Dark Theme)
+    ctx.fillStyle = "#000000";
+    ctx.roundRect ? ctx.roundRect(0, 0, 600, 250, 16) : ctx.fillRect(0, 0, 600, 250);
+    ctx.fill();
+
+    // إطار للتغريدة
+    ctx.strokeStyle = "#2f3336";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // تحميل صورة البروفايل
+    let avatarSrc = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
+    if (window.selectedAvatarBase64) {
+      avatarSrc = window.selectedAvatarBase64;
+    } else if (avatarUrlInput && avatarUrlInput.startsWith("http")) {
+      avatarSrc = avatarUrlInput;
     }
 
-    status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري إنشاء صورة التغريدة...`;
+    const avatarImg = new Image();
+    avatarImg.crossOrigin = "anonymous";
+    avatarImg.src = avatarSrc;
 
-    const replies = "69";
-    const retweets = "69";
-    const theme = "dark";
+    await new Promise((resolve) => {
+      avatarImg.onload = resolve;
+      avatarImg.onerror = () => {
+        avatarImg.src = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
+        avatarImg.onload = resolve;
+      };
+    });
 
-    const tweetApiUrl = `https://some-random-api.com/canvas/misc/tweet?displayname=${encodeURIComponent(displayName)}&username=${encodeURIComponent(username)}&avatar=${encodeURIComponent(finalAvatar)}&comment=${encodeURIComponent(comment)}&replies=${encodeURIComponent(replies)}&retweets=${encodeURIComponent(retweets)}&theme=${encodeURIComponent(theme)}`;
+    // رسم صورة البروفايل دائرية
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(540, 45, 24, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(avatarImg, 516, 21, 48, 48);
+    ctx.restore();
 
-    // جلب الصورة لتفادي أخطاء الـ Cross-Origin
-    const response = await fetch(tweetApiUrl);
-    if (!response.ok) throw new Error("API Response Error");
+    // كتابة الاسم اليوزر والعرض
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 16px sans-serif";
+    ctx.direction = "rtl";
+    ctx.textAlign = "right";
+    ctx.fillText(displayName, 500, 38);
 
-    const imageBlob = await response.blob();
-    const objectUrl = URL.createObjectURL(imageBlob);
+    ctx.fillStyle = "#71767b";
+    ctx.font = "14px sans-serif";
+    ctx.direction = "ltr";
+    ctx.textAlign = "left";
+    ctx.fillText(`@${username} • Sep 21, 2026`, 300, 58);
+
+    // كتابة نص التغريدة
+    ctx.fillStyle = "#e7e9ea";
+    ctx.font = "18px sans-serif";
+    ctx.direction = "rtl";
+    ctx.textAlign = "right";
+    
+    // تقسيم النص المكتوب لأسطر ليتناسب مع الصورة
+    const words = comment.split(" ");
+    let line = "";
+    let y = 110;
+
+    for (let n = 0; n < words.length; n++) {
+      let testLine = line + words[n] + " ";
+      let metrics = ctx.measureText(testLine);
+      if (metrics.width > 540 && n > 0) {
+        ctx.fillText(line, 570, y);
+        line = words[n] + " ";
+        y += 28;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, 570, y);
+
+    // إضافة أيقونات التفاعل الافتراضية
+    ctx.fillStyle = "#71767b";
+    ctx.font = "14px sans-serif";
+    ctx.direction = "ltr";
+    ctx.textAlign = "left";
+    ctx.fillText("💬 69     🔁 69     ❤️ 6.9K     📊 100K", 40, 220);
+
+    // استخراج الصورة النهائية
+    const dataUrl = canvas.toDataURL("image/png");
+    resultImg.src = dataUrl;
+    window.generatedTweetDataUrl = dataUrl;
 
     status.style.color = "var(--accent-green)";
     status.innerHTML = `✅ تم إنشاء التغريدة بنجاح!`;
-
-    resultImg.src = objectUrl;
-    window.latestTweetBlobUrl = objectUrl;
-
     resultArea.style.display = "flex";
-    btn.disabled = false;
-    btn.style.opacity = "1";
 
   } catch (err) {
-    console.error(err);
     status.style.color = "#ff4d4d";
-    status.innerHTML = `❌ حدث خطأ، يرجى إعادة المحاولة أو التأكد من نص التغريدة.`;
+    status.innerHTML = `❌ حدث خطأ، يرجى المحاولة مرة أخرى.`;
+  } finally {
     btn.disabled = false;
     btn.style.opacity = "1";
   }
 };
 
-// دالة تنزيل صورة التغريدة للجهاز
+// تنزيل الصورة الناتجة
 window.downloadGeneratedTweet = function () {
-  if (!window.latestTweetBlobUrl) return;
+  if (!window.generatedTweetDataUrl) return;
 
   const a = document.createElement("a");
-  a.href = window.latestTweetBlobUrl;
-  a.download = `tweet_${Date.now()}.png`;
+  a.href = window.generatedTweetDataUrl;
+  a.download = `Tweet_${Date.now()}.png`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
