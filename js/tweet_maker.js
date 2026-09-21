@@ -112,18 +112,33 @@ window.openTweetMakerService = function () {
       <!-- حالة المعالجة -->
       <div id="tweetStatus" style="display: none; font-size: 0.85rem; padding: 6px;"></div>
 
-      <!-- عرض التغريدة الناتجة وتنزيلها -->
-      <div id="tweetResultArea" style="display: none; flex-direction: column; gap: 10px; margin-top: 5px; align-items: center;">
-        <img id="tweetResultImg" src="" alt="Tweet Image" style="max-width: 100%; border-radius: 10px; border: 1px solid var(--border-color);" />
+    </div>
+
+    <!-- نافذة منبثقة للنتيجة النهائية -->
+    <div id="tweetPopupModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 9999; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box;">
+      <div style="background: #15202b; border: 1px solid var(--border-color); border-radius: 14px; max-width: 480px; width: 100%; padding: 16px; position: relative; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
         
+        <!-- زر الإغلاق -->
+        <button onclick="closeTweetPopup()" style="position: absolute; top: 10px; left: 12px; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 1.1rem; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+        
+        <h3 style="margin: 0 0 10px 0; font-size: 1rem; color: var(--accent-blue);">🎉 تم إنشاء التغريدة بنجاح</h3>
+        
+        <!-- الصورة المولدة -->
+        <img id="tweetPopupImg" src="" alt="Tweet Image" style="width: 100%; border-radius: 10px; border: 1px solid #2f3336; margin-bottom: 12px;" />
+
+        <!-- تعليمات التنزيل -->
+        <p style="font-size: 0.8rem; color: #aab8c2; margin: 0 0 12px 0; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; line-height: 1.4;">
+          💡 <b>طريقة التحميل:</b> اضغط على الزر أدناه للتحميل المباشر، أو اضغط مطولاً على الصورة واختر <b>"حفظ الصورة"</b>.
+        </p>
+
+        <!-- زر التحميل -->
         <button 
-          id="downloadTweetBtn"
           onclick="downloadGeneratedTweet()" 
           style="
             width: 100%; 
             padding: 11px; 
-            background: var(--accent-green); 
-            color: #000; 
+            background: #00ba7c; 
+            color: #fff; 
             font-weight: bold; 
             border: none; 
             border-radius: 8px; 
@@ -135,10 +150,9 @@ window.openTweetMakerService = function () {
             font-size: 0.9rem;
           "
         >
-          <i class="fa-solid fa-download"></i> تحميل الصورة للجهاز
+          <i class="fa-solid fa-download"></i> تحميل الصورة
         </button>
       </div>
-
     </div>
   `;
 
@@ -163,7 +177,13 @@ window.handleAvatarSelection = function (input) {
   }
 };
 
-// رسم التغريدة محلياً باستخدام Canvas المتصفح
+// إغلاق النافذة المنبثقة للنتيجة
+window.closeTweetPopup = function () {
+  const popup = document.getElementById("tweetPopupModal");
+  if (popup) popup.style.display = "none";
+};
+
+// رسم التغريدة محلياً وتوليد الصورة
 window.generateTweetImage = async function () {
   const displayName = document.getElementById("tweetDisplayName").value.trim() || "Ali-K";
   const username = document.getElementById("tweetUsername").value.trim() || "Ali";
@@ -171,8 +191,6 @@ window.generateTweetImage = async function () {
   const avatarUrlInput = document.getElementById("tweetAvatarUrl").value.trim();
   
   const status = document.getElementById("tweetStatus");
-  const resultArea = document.getElementById("tweetResultArea");
-  const resultImg = document.getElementById("tweetResultImg");
   const btn = document.getElementById("generateTweetBtn");
 
   if (!comment) {
@@ -185,7 +203,6 @@ window.generateTweetImage = async function () {
   status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري تصميم التغريدة...`;
   btn.disabled = true;
   btn.style.opacity = "0.6";
-  resultArea.style.display = "none";
 
   try {
     const canvas = document.createElement("canvas");
@@ -195,7 +212,11 @@ window.generateTweetImage = async function () {
 
     // خلفية التغريدة (Dark Theme)
     ctx.fillStyle = "#000000";
-    ctx.roundRect ? ctx.roundRect(0, 0, 600, 250, 16) : ctx.fillRect(0, 0, 600, 250);
+    if (ctx.roundRect) {
+      ctx.roundRect(0, 0, 600, 250, 16);
+    } else {
+      ctx.fillRect(0, 0, 600, 250);
+    }
     ctx.fill();
 
     // إطار للتغريدة
@@ -232,7 +253,7 @@ window.generateTweetImage = async function () {
     ctx.drawImage(avatarImg, 516, 21, 48, 48);
     ctx.restore();
 
-    // كتابة الاسم اليوزر والعرض
+    // كتابة اسم العرض و اسم المستخدم
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 16px sans-serif";
     ctx.direction = "rtl";
@@ -251,7 +272,6 @@ window.generateTweetImage = async function () {
     ctx.direction = "rtl";
     ctx.textAlign = "right";
     
-    // تقسيم النص المكتوب لأسطر ليتناسب مع الصورة
     const words = comment.split(" ");
     let line = "";
     let y = 110;
@@ -269,21 +289,26 @@ window.generateTweetImage = async function () {
     }
     ctx.fillText(line, 570, y);
 
-    // إضافة أيقونات التفاعل الافتراضية
+    // تفاعلات التغريدة الافتراضية
     ctx.fillStyle = "#71767b";
     ctx.font = "14px sans-serif";
     ctx.direction = "ltr";
     ctx.textAlign = "left";
     ctx.fillText("💬 69     🔁 69     ❤️ 6.9K     📊 100K", 40, 220);
 
-    // استخراج الصورة النهائية
+    // استخراج داتا الصورة وتغذيتها للنافذة المنبثقة
     const dataUrl = canvas.toDataURL("image/png");
-    resultImg.src = dataUrl;
     window.generatedTweetDataUrl = dataUrl;
 
-    status.style.color = "var(--accent-green)";
-    status.innerHTML = `✅ تم إنشاء التغريدة بنجاح!`;
-    resultArea.style.display = "flex";
+    const popupImg = document.getElementById("tweetPopupImg");
+    const popupModal = document.getElementById("tweetPopupModal");
+    
+    if (popupImg && popupModal) {
+      popupImg.src = dataUrl;
+      popupModal.style.display = "flex";
+    }
+
+    status.style.display = "none";
 
   } catch (err) {
     status.style.color = "#ff4d4d";
@@ -294,7 +319,7 @@ window.generateTweetImage = async function () {
   }
 };
 
-// تنزيل الصورة الناتجة
+// تنزيل الصورة
 window.downloadGeneratedTweet = function () {
   if (!window.generatedTweetDataUrl) return;
 
@@ -305,3 +330,4 @@ window.downloadGeneratedTweet = function () {
   a.click();
   document.body.removeChild(a);
 };
+ 
