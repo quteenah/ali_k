@@ -1,13 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
   const modalContainer = document.getElementById("modalContainer");
+  const modalCard = document.getElementById("modalCard");
   const modalTitle = document.getElementById("modalTitle");
   const modalBody = document.getElementById("modalBody");
   const closeModalBtn = document.getElementById("closeModalBtn");
 
-  // فتح أي أداة في نافذة
-  window.openServiceModal = function (title, contentHtml) {
+  // فتح الأداة في النافذة مع التحقق من نمط ملء الشاشة
+  window.openServiceModal = function (title, contentHtml, isFullScreen = false) {
     modalTitle.textContent = title;
     modalBody.innerHTML = contentHtml;
+    
+    if (isFullScreen) {
+      modalCard.classList.add("full-screen-modal");
+    } else {
+      modalCard.classList.remove("full-screen-modal");
+    }
+
     modalContainer.style.display = "flex";
   };
 
@@ -15,9 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
   closeModalBtn?.addEventListener("click", () => {
     modalContainer.style.display = "none";
     modalBody.innerHTML = "";
+    modalCard.classList.remove("full-screen-modal");
   });
 
-  // نافذة الشات الذكي (تستخدم كود chat.js الخاص بك دون أي تعديل)
+  // فتح أداة الشات الذكي
   window.openAiChatModal = function () {
     openServiceModal(
       "💬 محادثة الذكاء الاصطناعي (Ali-K AI)",
@@ -33,7 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
           <button id="modalSendBtn" class="action-btn-modal" style="padding: 10px 18px; cursor:pointer;">إرسال 🚀</button>
         </div>
       </div>
-      `
+      `,
+      false
     );
 
     setTimeout(() => {
