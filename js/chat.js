@@ -57,24 +57,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // دالة إرسال الطلب للذكاء الاصطناعي الحقيقي
   window.handleSendMessage = async function (inputEl, chatBoxEl) {
-    if (!inputEl || !chatBoxEl) return;
+    // إذا لم تُمرر العناصر، يتم جلبها تلقائياً بالمعرفات المشهورة
+    const input = inputEl || document.getElementById("userInput") || document.getElementById("modalChatInput");
+    const chatBox = chatBoxEl || document.getElementById("chat-box") || document.getElementById("modalChatBox");
+
+    if (!input || !chatBox) return;
     
-    const prompt = inputEl.value.trim();
+    const prompt = input.value.trim();
     if (!prompt) return;
 
-    // 1. طباعة رسالة المستخدم
-    appendMessage("user", prompt, chatBoxEl);
-    inputEl.value = "";
+    // 1. طباعة رسالة المستخدم وتفريغ الخانة فوراً
+    appendMessage("user", prompt, chatBox);
+    input.value = "";
 
     // 2. مؤشر الانتظار
     const loadingDiv = document.createElement("div");
     loadingDiv.style.cssText = "color: #00ffaa; font-size: 0.85rem; margin-bottom: 10px; padding: 5px;";
     loadingDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري توليد الإجابة بواسطة الذكاء الاصطناعي...`;
-    chatBoxEl.appendChild(loadingDiv);
-    chatBoxEl.scrollTop = chatBoxEl.scrollHeight;
+    chatBox.appendChild(loadingDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
-      // طلب إجابة ذكية من السيرفر المجاني المباشر
+      // طلب إجابة ذكية من السيرفر المباشر
       const systemPrompt = "أنت مساعد ذكي واحترافي يدعى Ali-K AI. أجب باللغة العربية بوضوح ودقة ودقة في البرمجة والنصوص.";
       const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?system=${encodeURIComponent(systemPrompt)}`);
       
@@ -82,14 +86,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (response.ok) {
         const aiReply = await response.text();
-        appendMessage("bot", aiReply, chatBoxEl);
+        appendMessage("bot", aiReply, chatBox);
       } else {
-        appendMessage("bot", "أهلاً بك! حدث ضغط مؤقت على الخادم، يرجى إعادة إرسال سؤالك وسأجيبك فوراً.", chatBoxEl);
+        appendMessage("bot", "أهلاً بك! حدث ضغط مؤقت على الخادم، يرجى إعادة إرسال سؤالك وسأجيبك فوراً.", chatBox);
       }
     } catch (err) {
       loadingDiv.remove();
-      appendMessage("bot", "أهلاً بك! أستطيع مساعدتك في الأكواد والبرمجة وكتابة النصوص، يرجى إعادة محاولة السؤال.", chatBoxEl);
+      appendMessage("bot", "أهلاً بك! أستطيع مساعدتك في الأكواد والبرمجة وكتابة النصوص، يرجى إعادة محاولة السؤال.", chatBox);
     }
   };
+
+  // ==========================================
+  // ربط الأحداث تلقائياً بالزر ومربع النص
+  // ==========================================
+  document.addEventListener("click", (e) => {
+    const target = e.target.closest("#sendBtn, #modalSendBtn, .send-btn");
+    if (target) {
+      e.preventDefault();
+      window.handleSendMessage();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.target.id === "userInput" || e.target.id === "modalChatInput")) {
+      e.preventDefault();
+      window.handleSendMessage();
+    }
+  });
+
 });
- 
