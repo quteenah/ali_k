@@ -104,5 +104,31 @@ document.addEventListener("DOMContentLoaded", () => {
       appendMessage("bot", "أهلاً بك! أستطيع مساعدتك في الأكواد والبرمجة وكتابة النصوص، يرجى إعادة محاولة السؤال.", chatBoxEl);
     }
   };
+
+  // ==========================================
+  // ربط الأحداث تلقائياً بجميع أزرار وحقول الإرسال
+  // ==========================================
+  const triggerSend = () => {
+    const inputEl = document.getElementById('userInput') || document.getElementById('modalChatInput');
+    const chatBoxEl = document.getElementById('chat-box') || document.getElementById('modalChatBox');
+    if (inputEl && chatBoxEl) {
+      window.handleSendMessage(inputEl, chatBoxEl);
+    }
+  };
+
+  document.addEventListener('click', (e) => {
+    if (e.target && (e.target.id === 'sendBtn' || e.target.id === 'modalSendBtn' || e.target.closest('#sendBtn') || e.target.closest('#modalSendBtn'))) {
+      e.preventDefault();
+      triggerSend();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.target.id === 'userInput' || e.target.id === 'modalChatInput')) {
+      e.preventDefault();
+      triggerSend();
+    }
+  });
+
 });
  
