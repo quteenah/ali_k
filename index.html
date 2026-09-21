@@ -24,16 +24,16 @@
       color: var(--accent-blue, #00d9ff);
     }
 
-    /* تنسيق نافذة العرض لتأكيد وجود زر الرجوع بشكل واضح */
+    /* نافذة العرض المنبثقة */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(4px);
-      z-index: 9999;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(5px);
+      z-index: 99999;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -45,8 +45,8 @@
       border: 1px solid var(--border-color, #1f293d);
       border-radius: 16px;
       width: 100%;
-      max-width: 600px;
-      max-height: 90vh;
+      max-width: 650px;
+      height: 80vh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -55,7 +55,7 @@
 
     .modal-header {
       padding: 14px 20px;
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(255, 255, 255, 0.04);
       border-bottom: 1px solid var(--border-color, #1f293d);
       display: flex;
       align-items: center;
@@ -66,9 +66,9 @@
       background: rgba(255, 255, 255, 0.1);
       border: none;
       color: #fff;
-      font-size: 1.2rem;
-      width: 36px;
-      height: 36px;
+      font-size: 1.1rem;
+      width: 35px;
+      height: 35px;
       border-radius: 50%;
       cursor: pointer;
       display: flex;
@@ -83,7 +83,64 @@
 
     .modal-body {
       padding: 15px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       overflow-y: auto;
+    }
+
+    /* تنسيقات شات الذكاء الاصطناعي الداخلي */
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-bottom: 10px;
+    }
+    .chat-msg {
+      padding: 10px 14px;
+      border-radius: 12px;
+      max-width: 85%;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+    .chat-msg.user {
+      align-self: flex-end;
+      background: #00d9ff;
+      color: #000;
+      border-bottom-left-radius: 2px;
+    }
+    .chat-msg.bot {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.07);
+      color: #fff;
+      border-bottom-right-radius: 2px;
+      border: 1px solid var(--border-color, #1f293d);
+    }
+    .chat-input-area {
+      display: flex;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-color, #1f293d);
+    }
+    .chat-input-area input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color, #1f293d);
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      outline: none;
+    }
+    .chat-input-area button {
+      padding: 0 18px;
+      background: #00d9ff;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -223,37 +280,71 @@
 
   </main>
 
-  <!-- النافذة المنبثقة للأدوات (Modal Container) مع زر الرجوع/الإغلاق -->
+  <!-- النافذة المنبثقة للأدوات -->
   <div class="modal-overlay" id="modalContainer" style="display: none;">
     <div class="modal-card" id="modalCard">
       <div class="modal-header">
         <h3 id="modalTitle" style="margin:0; font-size:1.1rem; color:#fff;">عنوان الأداة</h3>
-        <button class="close-btn" id="closeModalBtn" onclick="closeModal()">
+        <button class="close-btn" onclick="closeModal()">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
       <div class="modal-body" id="modalBody">
-        <!-- يتم تحميل محتوى الأداة هنا تلقائياً -->
+        <!-- محتوى الأداة -->
       </div>
     </div>
   </div>
 
-  <!-- سكربتات التحكم بالنوافذ والكتابة السريعة -->
+  <!-- السكربتات التنفيذية -->
   <script>
-    // دالة إغلاق النافذة والرجوع للرئيسية
-    function closeModal() {
+    // فتح واجهة الشات المباشرة
+    function openAiChatModal() {
       const modal = document.getElementById("modalContainer");
-      if (modal) {
-        modal.style.display = "none";
-      }
+      const title = document.getElementById("modalTitle");
+      const body = document.getElementById("modalBody");
+
+      title.innerHTML = '<i class="fa-solid fa-comments"></i> شات الذكاء الاصطناعي';
+      body.innerHTML = `
+        <div class="chat-box" id="chatBox">
+          <div class="chat-msg bot">مرحباً بك! أنا مساعد الذكاء الاصطناعي في Ali-K Box. كيف يمكنني مساعدتك اليوم؟</div>
+        </div>
+        <div class="chat-input-area">
+          <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." onkeydown="if(event.key==='Enter') sendChatMessage()">
+          <button onclick="sendChatMessage()">إرسال</button>
+        </div>
+      `;
+      modal.style.display = "flex";
     }
 
-    // إغلاق النافذة عند الضغط خارج المربع
-    window.onclick = function(event) {
+    // إرسال الرسالة في الشات
+    function sendChatMessage() {
+      const input = document.getElementById("chatInput");
+      const chatBox = document.getElementById("chatBox");
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      // إضافة رسالة المستخدم
+      chatBox.innerHTML += `<div class="chat-msg user">${text}</div>`;
+      input.value = "";
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // إجابة تلقائية مؤقتة
+      setTimeout(() => {
+        chatBox.innerHTML += `<div class="chat-msg bot">تم استلام طلبك: "${text}". يجري تجهيز الرد المطلوب...</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }, 600);
+    }
+
+    // دالة إغلاق النافذة والعودة
+    function closeModal() {
+      document.getElementById("modalContainer").style.display = "none";
+    }
+
+    // إغلاق النافذة عند الضغط خارجها
+    window.onclick = function(e) {
       const modal = document.getElementById("modalContainer");
-      if (event.target === modal) {
-        closeModal();
-      }
+      if (e.target === modal) closeModal();
     };
 
     // تأثير الكتابة الترحيبية
@@ -270,15 +361,12 @@
         }
       }
 
-      if (typingElement) {
-        typeWriter();
-      }
+      if (typingElement) typeWriter();
     });
   </script>
 
-  <!-- استدعاء السكريبتات المستقلة -->
+  <!-- استدعاء السكريبتات الأخرى -->
   <script src="js/app.js"></script>
-  <script src="js/chat.js"></script>
   <script src="js/mail.js"></script>
   <script src="js/downloader.js"></script>
   <script src="js/image_uploader.js"></script>
