@@ -5,18 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const part2 = "WGdyb3FYx3YvTZqMpfun8Cg47HXGKlEx";
   const GROQ_API_KEY = part1 + part2;
 
-  // النماذج المعتمدة والمتاحة حالياً على سيرفرات Groq
-  const AVAILABLE_MODELS = [
-    "llama-3.3-70b-versatile",
-    "llama3-70b-8192",
-    "llama3-8b-8192",
-    "mixtral-8x7b-32768"
-  ];
+  // النموذج الرسمي والحديث المعتمد حالياً في Groq
+  const OFFICIAL_MODEL = "llama-3.3-70b-versatile";
 
   // تعليمات تخصيص الذكاء الاصطناعي
   const SYSTEM_INSTRUCTION = "أنت مساعد ذكاء اصطناعي اسمك Ali. تم تطويرك وصنعك بواسطة Ali. إذا سألك أي شخص عن اسمك أو من طورك أو من صاحبك، أجب دائماً بأن اسمك Ali وأن صاحبك ومطورك هو Ali.";
 
-  // دالة نسخ نص الرسالة
+  // دالة نسخ نص الرسالة فقط
   window.copyMsgText = function(btnElement) {
     const parent = btnElement.parentElement;
     const contentDiv = parent.querySelector('.msg-content');
@@ -34,41 +29,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // دالة إرسال الطلب مع التنقل الذكي بين النماذج الشغالة
+  // دالة إرسال الطلب لـ Groq مباشرة بالنموذج المعتمد
   async function fetchGroqReply(userPrompt) {
-    let lastError = null;
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: OFFICIAL_MODEL,
+        messages: [
+          { role: "system", content: SYSTEM_INSTRUCTION },
+          { role: "user", content: userPrompt }
+        ],
+        max_tokens: 4096
+      })
+    });
 
-    for (const modelName of AVAILABLE_MODELS) {
-      try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${GROQ_API_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            model: modelName,
-            messages: [
-              { role: "system", content: SYSTEM_INSTRUCTION },
-              { role: "user", content: userPrompt }
-            ],
-            max_tokens: 4096
-          })
-        });
+    const data = await response.json();
 
-        const data = await response.json();
-
-        if (response.ok && data.choices && data.choices[0] && data.choices[0].message) {
-          return data.choices[0].message.content; // تم النجاح بحديث نموذج
-        } else {
-          lastError = data.error ? data.error.message : 'خطأ في استجابة النموذج';
-        }
-      } catch (err) {
-        lastError = 'تعذر الاتصال بالخادم';
-      }
+    if (response.ok && data.choices && data.choices[0] && data.choices[0].message) {
+      return data.choices[0].message.content;
+    } else {
+      throw new Error(data.error ? data.error.message : 'خطأ في استجابة الخادم');
     }
-
-    throw new Error(lastError || 'جميع النماذج غير متاحة حالياً');
   }
 
   // دالة التحكم الرئيسية في الإرسال والتنسيق
@@ -84,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. تفريغ الخانة فوراً
     inputEl.value = '';
 
-    // 2. إظهار رسالة المستخدم بالتصميم القديم
+    // 2. إظهار رسالة المستخدم
     const userDiv = document.createElement('div');
     userDiv.className = 'msg user-msg';
     userDiv.style.cssText = `
@@ -106,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     boxEl.appendChild(userDiv);
     boxEl.scrollTop = boxEl.scrollHeight;
 
-    // 3. كادر الانتظار للذكاء الاصطناعي وزر النسخ
+    // 3. كادر الانتظار مع زر النسخ
     const aiDiv = document.createElement('div');
     aiDiv.className = 'msg ai-msg';
     aiDiv.style.cssText = `
@@ -139,14 +124,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const reply = await fetchGroqReply(text);
       aiDiv.querySelector('.msg-content').innerHTML = reply.replace(/\n/g, '<br>');
     } catch (err) {
-      aiDiv.querySelector('.msg-content').innerText = `تنبيه: ${err.message}`;
+      aiDiv.querySelector('.msg-content').innerText = `خطأ: ${err.message}`;
     }
 
     if (statusText) statusText.innerText = 'STATUS: READY';
     boxEl.scrollTop = boxEl.scrollHeight;
   }
 
-  // ربط أحداث الضغط على الزر و Enter
+  // ربط الأحداث المباشرة (الضغط على الزر أو زر Enter)
   document.addEventListener('click', (e) => {
     if (e.target && (e.target.id === 'sendBtn' || e.target.id === 'modalSendBtn' || e.target.closest('#sendBtn') || e.target.closest('#modalSendBtn'))) {
       e.preventDefault();
@@ -162,3 +147,4 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+ 
