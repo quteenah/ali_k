@@ -1,16 +1,17 @@
 // ==========================================
-// أداة البريد المؤقت (AliMail) - شاشة كاملة
+// أداة البريد المؤقت (AliMail VIP)
 // ==========================================
 window.openMailService = function () {
-  const mailIframeUrl = "https://mail-alil.vercel.app/"; 
+  // استخدام رابط البريد الخاص بك المرفوع على Render
+  const mailIframeUrl = "https://alimail.onrender.com/"; 
 
   const mailHtml = `
     <div style="width: 100%; height: 100%; display: flex; flex-direction: column;">
-      <iframe src="${mailIframeUrl}" style="width: 100%; height: 100%; min-height: 80vh; border: none; border-radius: 8px;" allow="clipboard-write"></iframe>
+      <iframe src="${mailIframeUrl}" style="width: 100%; height: 100%; min-height: 82vh; border: none; border-radius: 8px;" allow="clipboard-write"></iframe>
     </div>
   `;
 
-  // التمرير الثالث بحجم true يضمن فتحها بملء الشاشة FullScreen
+  // فتح النافذة بملء الشاشة (true)
   if (window.openServiceModal) {
     window.openServiceModal("📧 البريد المؤقت (AliMail VIP)", mailHtml, true);
   }
