@@ -3,7 +3,7 @@
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
 
-  // مفتاح API الخاص بك - مقسم أمنياً لضمان عدم حظره
+  // مفتاح API الخاص بك مقسم أمنياً
   const part1 = "gsk_UmRror2UdNwdj6UbPmR8";
   const part2 = "WGdyb3FYz4InpyBWaPSbr8eDWiPJwtW2";
   const GROQ_API_KEY = part1 + part2;
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: "llama-3.1-8b-instant",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: prompt }
@@ -133,4 +133,3 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
- 
