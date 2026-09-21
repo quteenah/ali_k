@@ -3,11 +3,6 @@
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
 
-  // مفتاح API الخاص بك مقسم أمنياً
-  const part1 = "gsk_UmRror2UdNwdj6UbPmR8";
-  const part2 = "WGdyb3FYz4InpyBWaPSbr8eDWiPJwtW2";
-  const GROQ_API_KEY = part1 + part2;
-
   // دالة نسخ نص الرسالة إلى الحافظة
   window.copyMsgText = function(btnElement) {
     const parent = btnElement.parentElement;
@@ -53,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     container.scrollTop = container.scrollHeight;
   };
 
-  // دالة إرسال الطلب للذكاء الاصطناعي الحقيقي
+  // دالة إرسال الطلب للذكاء الاصطناعي الحقيقي دون الحاجة لمفاتيح
   window.handleSendMessage = async function (inputEl, chatBoxEl) {
     if (!inputEl || !chatBoxEl) return;
     
@@ -74,32 +69,15 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const systemPrompt = "أنت مساعد ذكي واحترافي يدعى Ali-K AI. تم تطويرك وصنعك بواسطة Ali. أجب باللغة العربية بوضوح ودقة.";
 
-      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${GROQ_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: prompt }
-          ],
-          max_tokens: 4096
-        })
-      });
+      const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?system=${encodeURIComponent(systemPrompt)}&model=openai`);
 
       loadingDiv.remove();
 
-      const data = await response.json();
-
-      if (response.ok && data.choices && data.choices[0]) {
-        const aiReply = data.choices[0].message.content;
+      if (response.ok) {
+        const aiReply = await response.text();
         appendMessage("bot", aiReply, chatBoxEl);
       } else {
-        const errorMsg = data.error ? data.error.message : 'حدث خطأ غير متوقع';
-        appendMessage("bot", `خطأ: ${errorMsg}`, chatBoxEl);
+        appendMessage("bot", "حدث خطأ غير متوقع في الخادم، يرجى المحاولة مرة أخرى.", chatBoxEl);
       }
     } catch (err) {
       loadingDiv.remove();
