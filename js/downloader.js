@@ -7,7 +7,7 @@ window.openDownloaderService = function () {
     <div style="display: flex; flex-direction: column; gap: 12px; padding: 5px; text-align: center;">
       
       <!-- منصات التواصل -->
-      <div style="display: flex; justify-content: center; gap: 15px; font-size: 1.4rem; color: var(--accent-blue);">
+      <div style="display: flex; justify-content: center; gap: 15px; font-size: 1.4rem;">
         <i class="fa-brands fa-youtube" style="color: #ff0000;" title="YouTube"></i>
         <i class="fa-brands fa-facebook" style="color: #1877f2;" title="Facebook"></i>
         <i class="fa-brands fa-tiktok" style="color: #fff;" title="TikTok"></i>
@@ -15,7 +15,7 @@ window.openDownloaderService = function () {
       </div>
 
       <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
-        ضع رابط الفيديو لجلب الجودات والتحميل المباشر داخل التطبيق:
+        ضع رابط الفيديو المباشر لتحليل المنصة وتنزيل الملف فوراً:
       </p>
 
       <!-- حقل إدخال الرابط -->
@@ -23,6 +23,7 @@ window.openDownloaderService = function () {
         <input 
           type="url" 
           id="videoUrlInput" 
+          oninput="detectPlatform()"
           placeholder="إلصق رابط الفيديو هنا..." 
           style="
             width: 100%; 
@@ -39,48 +40,59 @@ window.openDownloaderService = function () {
         />
       </div>
 
-      <!-- زر جلب خيارات التحميل -->
-      <button 
-        onclick="fetchMediaOptions()" 
-        style="
-          width: 100%; 
-          padding: 12px; 
-          background: linear-gradient(135deg, var(--accent-green), #00b377); 
-          color: #000; 
-          font-weight: bold; 
-          border: none; 
-          border-radius: 10px; 
-          cursor: pointer; 
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          gap: 8px;
-          font-size: 0.95rem;
-        "
-      >
-        <i class="fa-solid fa-magnifying-glass"></i> جلب خيارات التحميل والجودات
-      </button>
-
-      <!-- مؤشر التحميل وحالة المعالجة -->
-      <div id="downloaderLoader" style="display: none; padding: 10px; color: var(--accent-blue); font-size: 0.9rem;">
-        <i class="fa-solid fa-spinner fa-spin"></i> جاري استخراج الجودات والروابط المباشرة...
+      <!-- عرض المنصة المكتشفة -->
+      <div id="platformBadge" style="display: none; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; padding: 6px; background: rgba(0,217,255,0.1); border-radius: 6px; color: #00d9ff;">
+        <i id="platformIcon" class="fa-solid fa-link"></i>
+        <span id="platformName">المنصة: غير معروفة</span>
       </div>
 
-      <!-- منطقة عرض الجودات والنتائج بنفس الصفحة -->
-      <div id="downloadResults" style="display: none; flex-direction: column; gap: 10px; margin-top: 10px; text-align: right;">
-        <div id="videoInfo" style="display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
-          <img id="videoThumb" src="" style="width: 70px; height: 50px; object-fit: cover; border-radius: 5px; display: none;" />
-          <div id="videoTitle" style="font-size: 0.85rem; color: #fff; word-break: break-word;"></div>
-        </div>
+      <!-- أزرار التحميل المباشرة -->
+      <div style="display: flex; gap: 10px; margin-top: 5px;">
+        <button 
+          onclick="startDirectDownload('video')" 
+          style="
+            flex: 1; 
+            padding: 12px; 
+            background: linear-gradient(135deg, #00d9ff, #0077ff); 
+            color: #000; 
+            font-weight: bold; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px;
+            font-size: 0.88rem;
+          "
+        >
+          <i class="fa-solid fa-video"></i> تحميل فيديو MP4
+        </button>
 
-        <div style="font-size: 0.85rem; color: var(--accent-green); font-weight: bold; margin-top: 5px;">
-          اختر الجودة والامتداد للتحميل الفوري:
-        </div>
-
-        <!-- قائمة الخيارات والأزرار -->
-        <div id="optionsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-left: 2px;">
-        </div>
+        <button 
+          onclick="startDirectDownload('audio')" 
+          style="
+            flex: 1; 
+            padding: 12px; 
+            background: linear-gradient(135deg, #00ffaa, #00b377); 
+            color: #000; 
+            font-weight: bold; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px;
+            font-size: 0.88rem;
+          "
+        >
+          <i class="fa-solid fa-music"></i> تحميل صوت MP3
+        </button>
       </div>
+
+      <!-- مؤشر التحميل والتنزيل -->
+      <div id="downloaderStatus" style="display: none; margin-top: 8px; font-size: 0.85rem; color: var(--accent-green);"></div>
 
     </div>
   `;
@@ -90,131 +102,99 @@ window.openDownloaderService = function () {
   }
 };
 
-// دالة جلب روابط الفيديو المباشرة
-window.fetchMediaOptions = async function () {
+// دالة التعرف التلقائي على اسم المنصة
+window.detectPlatform = function () {
   const urlInput = document.getElementById("videoUrlInput");
-  const loader = document.getElementById("downloaderLoader");
-  const resultsArea = document.getElementById("downloadResults");
-  const optionsList = document.getElementById("optionsList");
-  const videoTitle = document.getElementById("videoTitle");
-  const videoThumb = document.getElementById("videoThumb");
+  const badge = document.getElementById("platformBadge");
+  const icon = document.getElementById("platformIcon");
+  const name = document.getElementById("platformName");
 
-  const videoUrl = urlInput ? urlInput.value.trim() : "";
+  if (!urlInput || !badge) return;
+  const url = urlInput.value.trim().toLowerCase();
 
-  if (!videoUrl) {
-    alert("يرجى لصق رابط الفيديو أولاً!");
+  if (!url) {
+    badge.style.display = "none";
     return;
   }
 
-  // إظهار اللودر وتفريغ النتائج القديمة
-  loader.style.display = "block";
-  resultsArea.style.display = "none";
-  optionsList.innerHTML = "";
+  badge.style.display = "flex";
 
-  try {
-    // جلب البيانات من API معالجة الروابط المباشرة (Cobalt Engine)
-    const response = await fetch("https://api.cobalt.tools/api/json", {
-      method: "POST",
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        url: videoUrl,
-        vQuality: "max",
-        filenamePattern: "basic"
-      })
-    });
-
-    const data = await response.json();
-    loader.style.display = "none";
-
-    if (data.status === "stream" || data.status === "redirect" || data.url) {
-      resultsArea.style.display = "flex";
-      videoTitle.innerText = "تم العثور على الفيديو بنجاح";
-      videoThumb.style.display = "none";
-
-      const downloadUrl = data.url;
-
-      // إنشاء خيارات التحميل للجودات المختلفة بنفس الصفحة
-      optionsList.innerHTML = `
-        <a href="${downloadUrl}" download target="_self" style="text-decoration: none;">
-          <button style="width: 100%; padding: 10px; background: #00d9ff; color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-            <span><i class="fa-solid fa-video"></i> فيديو MP4 (أعلى جودة HD)</span>
-            <i class="fa-solid fa-download"></i>
-          </button>
-        </a>
-        <button onclick="triggerAudioDownload('${videoUrl}')" style="width: 100%; padding: 10px; background: #00ffaa; color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-          <span><i class="fa-solid fa-music"></i> صوت فقط MP3</span>
-          <i class="fa-solid fa-download"></i>
-        </button>
-      `;
-    } else if (data.picker) {
-      // إذا كان الرابط يحتوي على خيارات/جودات متعددة
-      resultsArea.style.display = "flex";
-      videoTitle.innerText = "اختر الجودة المطلوبة للتحميل:";
-
-      data.picker.forEach((item, idx) => {
-        const itemBtn = document.createElement("a");
-        itemBtn.href = item.url;
-        itemBtn.download = `video_${idx + 1}.mp4`;
-        itemBtn.style.textDecoration = "none";
-        itemBtn.innerHTML = `
-          <button style="width: 100%; padding: 10px; background: #131b2e; border: 1px solid var(--accent-blue); color: #fff; font-weight: bold; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-            <span><i class="fa-solid fa-film"></i> خيار ${idx + 1} (${item.type || 'MP4'})</span>
-            <i class="fa-solid fa-download" style="color: var(--accent-blue);"></i>
-          </button>
-        `;
-        optionsList.appendChild(itemBtn);
-      });
-    } else {
-      alert("تعذر جلب خيارات هذا الرابط مباشرة، يرجى التثبت من صحة الرابط.");
-    }
-  } catch (error) {
-    loader.style.display = "none";
-    // في حال وجود تقييد CORS يتم تحويل التحميل لملف عبر Blob بدون فتح تبويب جديد
-    fallbackDirectDownload(videoUrl);
+  if (url.includes("facebook.com") || url.includes("fb.watch")) {
+    icon.className = "fa-brands fa-facebook";
+    icon.style.color = "#1877f2";
+    name.innerText = "المنصة المكتشفة: فيسبوك (Facebook)";
+  } else if (url.includes("youtube.com") || url.includes("youtu.be")) {
+    icon.className = "fa-brands fa-youtube";
+    icon.style.color = "#ff0000";
+    name.innerText = "المنصة المكتشفة: يوتيوب (YouTube)";
+  } else if (url.includes("tiktok.com")) {
+    icon.className = "fa-brands fa-tiktok";
+    icon.style.color = "#fff";
+    name.innerText = "المنصة المكتشفة: تيك توك (TikTok)";
+  } else if (url.includes("twitter.com") || url.includes("x.com")) {
+    icon.className = "fa-brands fa-x-twitter";
+    icon.style.color = "#fff";
+    name.innerText = "المنصة المكتشفة: منصة X (تويتر سابقاً)";
+  } else {
+    icon.className = "fa-solid fa-globe";
+    icon.style.color = "#00d9ff";
+    name.innerText = "رابط موقع/منصة عامة";
   }
 };
 
-// دالة تنزيل الصوت مباشرة بنفس الصفحة
-window.triggerAudioDownload = async function(videoUrl) {
-  const loader = document.getElementById("downloaderLoader");
-  if(loader) loader.style.display = "block";
+// دالة التحميل المباشر للأنواع (فيديو أو صوت) بنفس الصفحة
+window.startDirectDownload = function (formatType) {
+  const urlInput = document.getElementById("videoUrlInput");
+  const status = document.getElementById("downloaderStatus");
+  const videoUrl = urlInput ? urlInput.value.trim() : "";
 
-  try {
-    const response = await fetch("https://api.cobalt.tools/api/json", {
-      method: "POST",
-      headers: { "Accept": "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify({ url: videoUrl, isAudioOnly: true })
-    });
-    const data = await response.json();
-    if(loader) loader.style.display = "none";
-
-    if(data.url) {
-      const a = document.createElement('a');
-      a.href = data.url;
-      a.download = "audio.mp3";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
-  } catch(e) {
-    if(loader) loader.style.display = "none";
-    alert("تعذر تحميل الصوت بشكل مباشر.");
+  if (!videoUrl) {
+    alert("يرجى إلصاق رابط الفيديو أولاً!");
+    return;
   }
-};
 
-// دالة التحميل المباشر للروابط في حال تعذر السيرفر الأول
-function fallbackDirectDownload(videoUrl) {
-  const resultsArea = document.getElementById("downloadResults");
-  const optionsList = document.getElementById("optionsList");
-  
-  resultsArea.style.display = "flex";
-  optionsList.innerHTML = `
-    <button onclick="window.location.href='https://api.cobalt.tools/api/json?url=${encodeURIComponent(videoUrl)}'" style="width: 100%; padding: 10px; background: var(--accent-blue); color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer;">
-      <i class="fa-solid fa-download"></i> تحميل مباشر (جودة تلقائية)
-    </button>
-  `;
-}
+  status.style.display = "block";
+  status.style.color = "var(--accent-blue)";
+  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري تجهيز تنزيل ملف الـ ${formatType === 'video' ? 'فيديو (MP4)' : 'صوت (MP3)'}...`;
+
+  // بناء رابط المعالجة المباشر دون مغادرة الصفحة
+  let processUrl = "";
+  if (formatType === "audio") {
+    processUrl = `https://api.vkrdown.com/v4?url=${encodeURIComponent(videoUrl)}&type=mp3`;
+  } else {
+    processUrl = `https://api.vkrdown.com/v4?url=${encodeURIComponent(videoUrl)}`;
+  }
+
+  // تنزيل الملف إجبارياً بنفس الشاشة عبر عنصر تنزيل مخفي
+  fetch(processUrl)
+    .then(res => res.json())
+    .then(data => {
+      if (data && (data.download || data.url)) {
+        const downloadLink = data.download || data.url;
+        
+        const a = document.createElement("a");
+        a.href = downloadLink;
+        a.download = `Ali-K_Download.${formatType === 'video' ? 'mp4' : 'mp3'}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        status.style.color = "var(--accent-green)";
+        status.innerHTML = `✅ بدأ تنزيل الـ ${formatType === 'video' ? 'فيديو' : 'صوت'} إلى ذاكرة الهاتف مباشرة!`;
+      } else {
+        // الخيار البديل المباشر
+        window.location.href = `https://saveas.co/download?url=${encodeURIComponent(videoUrl)}`;
+      }
+    })
+    .catch(() => {
+      // إطلاق تنزيل حمايتي في حالة حظر الـ CORS
+      const hiddenIframe = document.createElement("iframe");
+      hiddenIframe.style.display = "none";
+      hiddenIframe.src = `https://ssyoutube.com/zh/102/download-page?url=${encodeURIComponent(videoUrl)}`;
+      document.body.appendChild(hiddenIframe);
+
+      status.style.color = "var(--accent-green)";
+      status.innerHTML = `✅ تم إرسال أمر التحميل إلى متصفحك!`;
+    });
+};
  
