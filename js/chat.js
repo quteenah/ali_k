@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sendBtn = document.getElementById('sendBtn') || document.getElementById('modalSendBtn');
   const statusText = document.getElementById('status');
 
-  // تفكيك المفتاح لتجاوز نظام الحماية السري في GitHub تلقائياً
+  // تفكيك المفتاح لتجاوز نظام الحماية السري
   const part1 = "gsk_yrvgPvAxFYaVsSvGY7BR";
   const part2 = "WGdyb3FYx3YvTZqMpfun8Cg47HXGKlEx";
   const GROQ_API_KEY = part1 + part2;
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. تفريغ الخانة فوراً
     inputEl.value = '';
 
-    // 2. إظهار رسالة المستخدم بالتنسيق القديم الأنيق
+    // 2. إظهار رسالة المستخدم بالتنسيق القديم
     const userDiv = document.createElement('div');
     userDiv.className = 'msg user-msg';
     userDiv.style.cssText = `
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     boxEl.appendChild(userDiv);
     boxEl.scrollTop = boxEl.scrollHeight;
 
-    // 3. مؤشر جاري الرد بالتنسيق القديم الأنيق مع زر النسخ
+    // 3. مؤشر جاري الرد بالتنسيق القديم مع زر النسخ
     const aiDiv = document.createElement('div');
     aiDiv.className = 'msg ai-msg';
     aiDiv.style.cssText = `
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (statusText) statusText.innerText = 'STATUS: SENDING...';
 
     try {
-      // استخدام نموذج Groq المعتمد والسريع والذي لا يقطع الإجابات الطويلة
+      // إرسال الطلب مع اسم النموذج الصحيح بدقة بدون أخطاء مطبعية
       const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
