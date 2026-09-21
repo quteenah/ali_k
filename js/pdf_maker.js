@@ -43,8 +43,8 @@ function openPdfMakerService() {
       <!-- قسم تحويل النص إلى PDF -->
       <div id="pdfTextSection" style="display: none; flex-direction: column; gap: 12px;">
         <div>
-          <label style="font-size: 0.85rem; color: #94a3b8; display: block; margin-bottom: 6px;">اكتب أو ألصق النص هنا:</label>
-          <textarea id="pdfInputText" placeholder="اكتب النص الذي ترغب بتحويله إلى مستند PDF..." style="width: 100%; height: 120px; padding: 10px; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; color: #fff; outline: none; box-sizing: border-box; resize: vertical;"></textarea>
+          <label style="font-size: 0.85rem; color: #94a3b8; display: block; margin-bottom: 6px;">اكتب أو ألصق النص هنا (يدعم اللغة العربية):</label>
+          <textarea id="pdfInputText" placeholder="اكتب النص الذي ترغب بتحويله إلى مستند PDF..." style="width: 100%; height: 120px; padding: 10px; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; color: #fff; outline: none; box-sizing: border-box; resize: vertical; direction: rtl; text-align: right;"></textarea>
         </div>
 
         <button onclick="convertTextToPdf()" style="background: #ff4757; color: #fff; font-weight: bold; padding: 10px; border: none; border-radius: 8px; cursor: pointer;">
@@ -91,7 +91,7 @@ function previewPdfImages(input) {
 
   if (selectedPdfImages.length === 0) return;
 
-  selectedPdfImages.forEach((file, index) => {
+  selectedPdfImages.forEach((file) => {
     const reader = new FileReader();
     reader.onload = function (e) {
       const img = document.createElement("img");
@@ -103,7 +103,7 @@ function previewPdfImages(input) {
   });
 }
 
-// دالة تحويل مجموعة صور إلى PDF
+// تحويل الصور إلى PDF
 async function convertImagesToPdf() {
   const status = document.getElementById("pdfStatus");
   if (!selectedPdfImages || selectedPdfImages.length === 0) {
@@ -140,7 +140,7 @@ async function convertImagesToPdf() {
   status.innerText = "✅ تم تحميل ملف PDF بنجاح!";
 }
 
-// دالة تحويل النص إلى PDF
+// تحويل النص العربي إلى PDF بوضوح تبياني عالي
 async function convertTextToPdf() {
   const text = document.getElementById("pdfInputText").value.trim();
   const status = document.getElementById("pdfStatus");
@@ -151,30 +151,86 @@ async function convertTextToPdf() {
   }
 
   status.style.display = "block";
-  status.innerText = "⚡ جاري تحويل النص إلى PDF...";
+  status.innerText = "⚡ جاري معالجة النص العربي وإنشاء الـ PDF...";
 
   await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
 
-  const margin = 10;
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const maxWidth = doc.internal.pageSize.getWidth() - margin * 2;
-  
-  const lines = doc.splitTextToSize(text, maxWidth);
-  let cursorY = 20;
+  // إنشاء canvas مؤقت بريزولوشن عالي لرسم النص العربي
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
 
-  lines.forEach(line => {
-    if (cursorY + 10 > pageHeight - margin) {
-      doc.addPage();
-      cursorY = 20;
-    }
-    doc.text(line, margin, cursorY);
-    cursorY += 7;
+  const canvasWidth = 1200;
+  const padding = 60;
+  const fontSize = 28;
+  const lineHeight = 42;
+
+  // تقسيم النص إلى أسطر متناسبة مع العرض
+  ctx.font = `${fontSize}px sans-serif, 'Segoe UI', Tahoma, Geneva, Verdana`;
+  const paragraphs = text.split("\n");
+  let lines = [];
+
+  paragraphs.forEach(para => {
+    const words = para.split(" ");
+    let currentLine = "";
+
+    words.forEach(word => {
+      let testLine = currentLine ? currentLine + " " + word : word;
+      let metrics = ctx.measureText(testLine);
+      if (metrics.width > (canvasWidth - padding * 2) && currentLine !== "") {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
   });
 
-  doc.save("text_document.pdf");
-  status.innerText = "✅ تم تحميل ملف PDF بنجاح!";
+  // حساب ارتفاع الكانفاس المطلوب
+  const canvasHeight = Math.max(1600, lines.length * lineHeight + padding * 2);
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+
+  // إعادة خلفية بيضاء ورسم النص العربي بتجاه RTL
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#000000";
+  ctx.font = `${fontSize}px sans-serif, 'Segoe UI', Tahoma, Geneva, Verdana`;
+  ctx.direction = "rtl";
+  ctx.textAlign = "right";
+
+  let y = padding + fontSize;
+  lines.forEach(line => {
+    ctx.fillText(line, canvasWidth - padding, y);
+    y += lineHeight;
+  });
+
+  // تحويل الكانفاس إلى صورة واستخراج PDF منها
+  const imgData = canvas.toDataURL("image/jpeg", 0.95);
+  const doc = new jsPDF("p", "pt", "a4");
+
+  const pdfWidth = doc.internal.pageSize.getWidth();
+  const pdfHeight = doc.internal.pageSize.getHeight();
+
+  const imgHeight = (canvasHeight * pdfWidth) / canvasWidth;
+
+  let heightLeft = imgHeight;
+  let position = 0;
+
+  doc.addImage(imgData, "JPEG", 0, position, pdfWidth, imgHeight);
+  heightLeft -= pdfHeight;
+
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight;
+    doc.addPage();
+    doc.addImage(imgData, "JPEG", 0, position, pdfWidth, imgHeight);
+    heightLeft -= pdfHeight;
+  }
+
+  doc.save("arabic_document.pdf");
+  status.innerText = "✅ تم إنشاء وتحميل مستند PDF العربي بنجاح!";
 }
 
 // دالة مساعدة لتحويل الملف إلى DataURL
@@ -197,3 +253,4 @@ function loadScript(src) {
     document.head.appendChild(script);
   });
 }
+ 
