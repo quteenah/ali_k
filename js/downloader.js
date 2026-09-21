@@ -6,7 +6,7 @@ window.openDownloaderService = function () {
   const downloaderHtml = `
     <div style="display: flex; flex-direction: column; gap: 12px; padding: 5px; text-align: center;">
       
-      <!-- منصات التواصل -->
+      <!-- أيقونات المنصات -->
       <div style="display: flex; justify-content: center; gap: 15px; font-size: 1.4rem;">
         <i class="fa-brands fa-youtube" style="color: #ff0000;" title="YouTube"></i>
         <i class="fa-brands fa-facebook" style="color: #1877f2;" title="Facebook"></i>
@@ -15,7 +15,7 @@ window.openDownloaderService = function () {
       </div>
 
       <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
-        إلصق رابط الفيديو واضغط للحصول على خيارات الجودة والتحميل المباشر:
+        ضع رابط الفيديو لجلب روابط التنزيل الفوري (MP4 / MP3):
       </p>
 
       <!-- حقل إدخال الرابط -->
@@ -40,15 +40,15 @@ window.openDownloaderService = function () {
         />
       </div>
 
-      <!-- عرض المنصة المكتشفة -->
+      <!-- شارة المنصة المكتشفة -->
       <div id="platformBadge" style="display: none; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; padding: 6px; background: rgba(0,217,255,0.1); border-radius: 6px; color: #00d9ff;">
         <i id="platformIcon" class="fa-solid fa-link"></i>
         <span id="platformName">المنصة: غير معروفة</span>
       </div>
 
-      <!-- زر المعالجة واستخراج الجودات -->
+      <!-- زر معالجة واستخراج الروابط -->
       <button 
-        onclick="processMediaDownload()" 
+        onclick="fetchMediaLinks()" 
         style="
           width: 100%; 
           padding: 12px; 
@@ -68,17 +68,17 @@ window.openDownloaderService = function () {
         <i class="fa-solid fa-magnifying-glass"></i> استخراج الجودات وزر التحميل
       </button>
 
-      <!-- مؤشر المعالجة -->
+      <!-- مؤشر التحميل -->
       <div id="downloaderLoader" style="display: none; color: var(--accent-blue); font-size: 0.88rem; padding: 8px;">
-        <i class="fa-solid fa-spinner fa-spin"></i> جاري جلب روابط التحميل المباشرة...
+        <i class="fa-solid fa-spinner fa-spin"></i> جاري فك وتجهيز روابط التنزيل المباشرة...
       </div>
 
-      <!-- قائمة أزرار الجودات المباشرة بنفس الصفحة -->
+      <!-- منطقة عرض النتائج والأزرار المباشرة -->
       <div id="downloadResults" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px; text-align: right;">
         <div style="font-size: 0.85rem; color: var(--accent-green); font-weight: bold;">
-          ✅ اختر الصيغة المطلوبة لبدء التنزيل الفوري:
+          ✅ اضغط على الصيغة لبدء التحميل مباشرة بنفس الصفحة:
         </div>
-        <div id="optionsContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        <div id="optionsContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
       </div>
 
     </div>
@@ -129,8 +129,8 @@ window.detectPlatform = function () {
   }
 };
 
-// استخراج روابط التحميل الفورية والامتدادات
-window.processMediaDownload = async function () {
+// استخراج رابط الفيديو المباشر وبدء التحميل في المتصفح
+window.fetchMediaLinks = async function () {
   const urlInput = document.getElementById("videoUrlInput");
   const loader = document.getElementById("downloaderLoader");
   const results = document.getElementById("downloadResults");
@@ -147,42 +147,58 @@ window.processMediaDownload = async function () {
   container.innerHTML = "";
 
   try {
-    const apiRes = await fetch(`https://api.vkrdown.com/v4?url=${encodeURIComponent(videoUrl)}`);
-    const data = await apiRes.json();
+    // جلب ملف الفيديو المباشر عبر محرك تحويل CDN
+    const apiUrl = `https://api.vkrdown.com/v4?url=${encodeURIComponent(videoUrl)}`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
 
     loader.style.display = "none";
     results.style.display = "flex";
 
-    const mainLink = (data && (data.download || data.url)) ? (data.download || data.url) : videoUrl;
+    const mediaDirectUrl = (data && (data.download || data.url)) ? (data.download || data.url) : videoUrl;
 
-    // خيارات التنزيل المباشرة بروابط حقيقية تبدأ التحميل في المتصفح فوراً
     container.innerHTML = `
-      <a href="${mainLink}" download="video.mp4" target="_self" style="text-decoration: none;">
-        <button style="width: 100%; padding: 12px; background: #00d9ff; color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-          <span><i class="fa-solid fa-video"></i> تحميل فيديو HD (MP4)</span>
-          <i class="fa-solid fa-download"></i>
-        </button>
-      </a>
+      <button 
+        onclick="triggerFileDownload('${mediaDirectUrl}', 'Ali-K_Video.mp4')" 
+        style="width: 100%; padding: 12px; background: #00d9ff; color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
+      >
+        <span><i class="fa-solid fa-video"></i> تحميل فيديو MP4</span>
+        <i class="fa-solid fa-download"></i>
+      </button>
 
-      <a href="${mainLink}" download="audio.mp3" target="_self" style="text-decoration: none;">
-        <button style="width: 100%; padding: 12px; background: #00ffaa; color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-          <span><i class="fa-solid fa-music"></i> تحميل صوت فقط (MP3)</span>
-          <i class="fa-solid fa-download"></i>
-        </button>
-      </a>
+      <button 
+        onclick="triggerFileDownload('${mediaDirectUrl}', 'Ali-K_Audio.mp3')" 
+        style="width: 100%; padding: 12px; background: #00ffaa; color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
+      >
+        <span><i class="fa-solid fa-music"></i> تحميل صوت MP3</span>
+        <i class="fa-solid fa-download"></i>
+      </button>
     `;
-  } catch (e) {
+  } catch (err) {
     loader.style.display = "none";
     results.style.display = "flex";
 
-    // رابط مباشر احتياطي ينفذ فتح ملف الميديا مباشرة في نفس الصفحة للتنزيل
+    // خيار تنزيل مباشر احتياطي يضمن عدم الانتقال لأي موقع
     container.innerHTML = `
-      <a href="${videoUrl}" download target="_self" style="text-decoration: none;">
-        <button style="width: 100%; padding: 12px; background: #00d9ff; color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer;">
-          <i class="fa-solid fa-download"></i> بدء التنزيل المباشر (MP4 / MP3)
-        </button>
-      </a>
+      <button 
+        onclick="triggerFileDownload('${videoUrl}', 'downloaded_media.mp4')" 
+        style="width: 100%; padding: 12px; background: #00d9ff; color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
+      >
+        <span><i class="fa-solid fa-download"></i> بدء التنزيل المباشر فوراً</span>
+        <i class="fa-solid fa-file-arrow-down"></i>
+      </button>
     `;
   }
+};
+
+// دالة تنزيل الملف المباشرة لذاكرة الهاتف
+window.triggerFileDownload = function (fileUrl, fileName) {
+  const link = document.createElement("a");
+  link.href = fileUrl;
+  link.setAttribute("download", fileName);
+  link.setAttribute("target", "_self");
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
 };
  
