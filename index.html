@@ -72,7 +72,7 @@
       
       <!-- حقل البحث السريع -->
       <div class="search-box" style="margin-top: 15px;">
-        <input type="text" id="toolSearchInput" onkeyup="filterTools()" placeholder="🔍 ابحث عن أداة..." style="width: 100%; padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-card); color: #fff; font-size: 0.95rem; outline: none;">
+        <input type="search" id="toolSearchInput" onkeyup="filterTools()" placeholder="🔍 ابحث عن أداة..." style="width: 100%; padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-card); color: #fff; font-size: 0.95rem; outline: none;">
       </div>
     </section>
 
@@ -174,9 +174,9 @@
     </div>
   </div>
 
-  <!-- سكربت الربط والإدارة للأنظمة -->
+  <!-- السكربت الإداري للربط وتشغيل الأزرار -->
   <script>
-    // دالة فتح الشات المحدثة لربط زر الإرسال والـ Enter فورياً بملف chat.js
+    // دالة فتح الشات المحدثة
     function openAiChatModal() {
       const modal = document.getElementById("modalContainer");
       const title = document.getElementById("modalTitle");
@@ -192,15 +192,15 @@
             <span>CORE: GROQ_AI</span>
             <span>STATUS: ONLINE</span>
           </div>
-          <div class="cyber-chat-box" id="modalChatBox">
+          <div class="cyber-chat-box" id="chat-box">
             <div class="msg-ai">
               <div class="tag">GROQ_AI</div>
               <div class="msg-content">مرحباً بك! أنا مساعد الذكاء الاصطناعي الخاص بك. كيف يمكنني مساعدتك اليوم؟</div>
             </div>
           </div>
           <div style="display: flex; gap: 8px; margin-top: 12px;">
-            <input type="text" id="modalChatInput" class="cyber-input" placeholder="اكتب سؤالك هنا..." style="flex: 1; background: #0f172a; border: 1px solid #1e293b; color: #fff; padding: 10px; border-radius: 6px; outline: none;" onkeydown="if(event.key==='Enter'){ event.preventDefault(); window.handleSendMessage(); }">
-            <button type="button" id="sendBtn" class="cyber-send-btn send-btn" onclick="window.handleSendMessage()" style="background: #00d9ff; color: #000; border: none; padding: 0 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">إرسال</button>
+            <input type="text" id="userInput" class="cyber-input" placeholder="اكتب سؤالك هنا..." style="flex: 1; background: #0f172a; border: 1px solid #1e293b; color: #fff; padding: 10px; border-radius: 6px; outline: none;" onkeydown="if(event.key==='Enter'){ event.preventDefault(); sendCustomMessage(); }">
+            <button type="button" id="sendBtn" class="cyber-send-btn send-btn" onclick="sendCustomMessage()" style="background: #00d9ff; color: #000; border: none; padding: 0 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">إرسال</button>
           </div>
         </div>
       `;
@@ -208,19 +208,29 @@
       modal.style.display = "flex";
     }
 
-    // دالة إغلاق النافذة
+    // دالة مخصصة تضمن تنفيذ الإرسال بشكل مباشر وسليم
+    function sendCustomMessage() {
+      const input = document.getElementById('userInput');
+      if (input && input.value.trim() !== '') {
+        if (typeof window.handleSendMessage === 'function') {
+          window.handleSendMessage();
+        }
+      }
+    }
+
+    // دالة إغلاق النافذة المنبثقة
     function closeModal() {
       const modal = document.getElementById("modalContainer");
       if (modal) modal.style.display = "none";
     }
 
-    // إغلاق النافذة عند الضغط خارج المربع
+    // إغلاق عند الضغط خارج المربع
     window.addEventListener('click', function(event) {
       const modal = document.getElementById("modalContainer");
       if (event.target === modal) closeModal();
     });
 
-    // تأثير الكتابة الترحيبية
+    // تأثير النص الترحيبي
     document.addEventListener("DOMContentLoaded", function () {
       const textToType = "أهلاً بك في Ali-K AI Box! 🚀 يتم تحديث وإضافة أدوات جديدة للموقع بشكل شبه يومي...";
       const typingElement = document.getElementById("typingText");
@@ -238,7 +248,7 @@
     });
   </script>
 
-  <!-- استدعاء السكريبتات المستقلة بشكلها الأصلي دون تعديل أي ملف -->
+  <!-- السكريبتات الخارجية بالترتيب الصحيح -->
   <script src="js/chat.js"></script>
   <script src="js/app.js"></script>
   <script src="js/mail.js"></script>
@@ -250,4 +260,3 @@
 
 </body>
 </html>
- 
