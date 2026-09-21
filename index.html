@@ -23,6 +23,68 @@
       margin-right: 2px;
       color: var(--accent-blue, #00d9ff);
     }
+
+    /* تنسيق نافذة العرض لتأكيد وجود زر الرجوع بشكل واضح */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+    }
+
+    .modal-card {
+      background: var(--bg-card, #121824);
+      border: 1px solid var(--border-color, #1f293d);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header {
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--border-color, #1f293d);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .close-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+
+    .close-btn:hover {
+      background: #ff4757;
+    }
+
+    .modal-body {
+      padding: 15px;
+      overflow-y: auto;
+    }
   </style>
 </head>
 <body>
@@ -40,7 +102,7 @@
   <!-- الواجهة الرئيسية الترحيبية -->
   <main class="main-container">
 
-    <!-- شريط الرسالة الترحيبية التفاعلية بتأثير الكتابة السريعة -->
+    <!-- شريط الرسالة الترحيبية التفاعلية -->
     <div id="welcomeBanner" style="
       background: rgba(0, 217, 255, 0.08); 
       border: 1px solid var(--border-color, #1f293d); 
@@ -122,7 +184,7 @@
           <div class="card-arrow"><i class="fa-solid fa-arrow-left"></i></div>
         </div>
 
-        <!-- أداة صانع التغريدات (شعار SVG مباشر لمنصة X) -->
+        <!-- أداة صانع التغريدات -->
         <div class="tool-card" onclick="openTweetMakerService()">
           <div class="card-icon" style="display: flex; align-items: center; justify-content: center;">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="#00d9ff" xmlns="http://www.w3.org/2000/svg">
@@ -161,12 +223,14 @@
 
   </main>
 
-  <!-- النافذة المنبثقة للأدوات (Modal Container) -->
+  <!-- النافذة المنبثقة للأدوات (Modal Container) مع زر الرجوع/الإغلاق -->
   <div class="modal-overlay" id="modalContainer" style="display: none;">
     <div class="modal-card" id="modalCard">
       <div class="modal-header">
-        <h3 id="modalTitle">عنوان الأداة</h3>
-        <button class="close-btn" id="closeModalBtn">&times;</button>
+        <h3 id="modalTitle" style="margin:0; font-size:1.1rem; color:#fff;">عنوان الأداة</h3>
+        <button class="close-btn" id="closeModalBtn" onclick="closeModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
       <div class="modal-body" id="modalBody">
         <!-- يتم تحميل محتوى الأداة هنا تلقائياً -->
@@ -174,8 +238,25 @@
     </div>
   </div>
 
-  <!-- سكربت كتابة الرسالة الترحيبية السريعة -->
+  <!-- سكربتات التحكم بالنوافذ والكتابة السريعة -->
   <script>
+    // دالة إغلاق النافذة والرجوع للرئيسية
+    function closeModal() {
+      const modal = document.getElementById("modalContainer");
+      if (modal) {
+        modal.style.display = "none";
+      }
+    }
+
+    // إغلاق النافذة عند الضغط خارج المربع
+    window.onclick = function(event) {
+      const modal = document.getElementById("modalContainer");
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
+
+    // تأثير الكتابة الترحيبية
     document.addEventListener("DOMContentLoaded", function () {
       const textToType = "أهلاً بك في Ali-K AI Box! 🚀 يتم تحديث وإضافة أدوات جديدة للموقع بشكل شبه يومي...";
       const typingElement = document.getElementById("typingText");
@@ -196,8 +277,8 @@
   </script>
 
   <!-- استدعاء السكريبتات المستقلة -->
-  <script src="js/chat.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/chat.js"></script>
   <script src="js/mail.js"></script>
   <script src="js/downloader.js"></script>
   <script src="js/image_uploader.js"></script>
