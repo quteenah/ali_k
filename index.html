@@ -82,7 +82,7 @@
       
       <div class="tools-grid">
         
-        <!-- أداة شات AI (تم ضبط الزر للعمل التام) -->
+        <!-- أداة شات AI -->
         <div class="tool-card accent-card" onclick="openAiChatModal()">
           <div class="card-icon"><i class="fa-solid fa-comments"></i></div>
           <div class="card-content">
@@ -176,7 +176,7 @@
 
   <!-- سكربت الربط والإدارة للأنظمة -->
   <script>
-    // دالة فتح الشات المتوافقة مع chat.js بدون التعديل عليه
+    // دالة فتح الشات المحدثة لربط زر الإرسال والـ Enter فورياً بملف chat.js
     function openAiChatModal() {
       const modal = document.getElementById("modalContainer");
       const title = document.getElementById("modalTitle");
@@ -186,7 +186,6 @@
 
       title.innerHTML = '<i class="fa-solid fa-comments"></i> شات الذكاء الاصطناعي';
       
-      // إدراج الواجهة متوافقة مع الكلاسات التي ينتظرها chat.js
       body.innerHTML = `
         <div class="cyber-chat-container">
           <div class="cyber-header">
@@ -200,8 +199,8 @@
             </div>
           </div>
           <div style="display: flex; gap: 8px; margin-top: 12px;">
-            <input type="text" id="modalChatInput" class="cyber-input" placeholder="اكتب سؤالك هنا..." style="flex: 1; background: #0f172a; border: 1px solid #1e293b; color: #fff; padding: 10px; border-radius: 6px; outline: none;">
-            <button class="cyber-send-btn" style="background: #00d9ff; color: #000; border: none; padding: 0 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">إرسال</button>
+            <input type="text" id="modalChatInput" class="cyber-input" placeholder="اكتب سؤالك هنا..." style="flex: 1; background: #0f172a; border: 1px solid #1e293b; color: #fff; padding: 10px; border-radius: 6px; outline: none;" onkeydown="if(event.key==='Enter'){ event.preventDefault(); window.handleSendMessage(); }">
+            <button type="button" id="sendBtn" class="cyber-send-btn send-btn" onclick="window.handleSendMessage()" style="background: #00d9ff; color: #000; border: none; padding: 0 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">إرسال</button>
           </div>
         </div>
       `;
