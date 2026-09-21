@@ -5,22 +5,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const part2 = "WGdyb3FYx3YvTZqMpfun8Cg47HXGKlEx";
   const GROQ_API_KEY = part1 + part2;
 
-  // قائمة النماذج المعتمدة بالترتيب (إذا فشل الأول يجرب الثاني فوراً)
+  // النماذج المعتمدة والمتاحة حالياً على سيرفرات Groq
   const AVAILABLE_MODELS = [
-    "llama-3.1-8b-instant",
     "llama-3.3-70b-versatile",
-    "gemma2-9b-it"
+    "llama3-70b-8192",
+    "llama3-8b-8192",
+    "mixtral-8x7b-32768"
   ];
 
   // تعليمات تخصيص الذكاء الاصطناعي
   const SYSTEM_INSTRUCTION = "أنت مساعد ذكاء اصطناعي اسمك Ali. تم تطويرك وصنعك بواسطة Ali. إذا سألك أي شخص عن اسمك أو من طورك أو من صاحبك، أجب دائماً بأن اسمك Ali وأن صاحبك ومطورك هو Ali.";
 
-  // دالة نسخ نص الرسالة فقط
+  // دالة نسخ نص الرسالة
   window.copyMsgText = function(btnElement) {
     const parent = btnElement.parentElement;
     const contentDiv = parent.querySelector('.msg-content');
     if (contentDiv) {
-      // إزالة عبارة "جاري الرد" إذا وجدت
       const textToCopy = contentDiv.innerText.replace('⚡ جاري الرد...', '').trim();
       navigator.clipboard.writeText(textToCopy).then(() => {
         const originalText = btnElement.innerHTML;
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // دالة إرسال الطلب وإعادة المحاولة مع النماذج البديلة
+  // دالة إرسال الطلب مع التنقل الذكي بين النماذج الشغالة
   async function fetchGroqReply(userPrompt) {
     let lastError = null;
 
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await response.json();
 
         if (response.ok && data.choices && data.choices[0] && data.choices[0].message) {
-          return data.choices[0].message.content; // نجحت العملية!
+          return data.choices[0].message.content; // تم النجاح بحديث نموذج
         } else {
           lastError = data.error ? data.error.message : 'خطأ في استجابة النموذج';
         }
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     throw new Error(lastError || 'جميع النماذج غير متاحة حالياً');
   }
 
-  // دالة التحكم الرئيسية في إرسال وعرض الرسائل
+  // دالة التحكم الرئيسية في الإرسال والتنسيق
   async function handleSend() {
     const inputEl = document.getElementById('userInput') || document.getElementById('modalChatInput');
     const boxEl = document.getElementById('chat-box') || document.getElementById('modalChatBox');
@@ -81,10 +81,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const text = inputEl.value.trim();
     if (!text) return;
 
-    // 1. مسح الخانة فوراً
+    // 1. تفريغ الخانة فوراً
     inputEl.value = '';
 
-    // 2. إظهار رسالة المستخدم (التصميم القديم الأنيق)
+    // 2. إظهار رسالة المستخدم بالتصميم القديم
     const userDiv = document.createElement('div');
     userDiv.className = 'msg user-msg';
     userDiv.style.cssText = `
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     boxEl.appendChild(userDiv);
     boxEl.scrollTop = boxEl.scrollHeight;
 
-    // 3. إنشاء كادر رد الذكاء الاصطناعي مع مؤشر الانتظار وزر النسخ
+    // 3. كادر الانتظار للذكاء الاصطناعي وزر النسخ
     const aiDiv = document.createElement('div');
     aiDiv.className = 'msg ai-msg';
     aiDiv.style.cssText = `
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (statusText) statusText.innerText = 'STATUS: SENDING...';
 
-    // 4. طلب الإجابة من الذكاء الاصطناعي
+    // 4. جلب الرد
     try {
       const reply = await fetchGroqReply(text);
       aiDiv.querySelector('.msg-content').innerHTML = reply.replace(/\n/g, '<br>');
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
     boxEl.scrollTop = boxEl.scrollHeight;
   }
 
-  // ربط الأحداث المباشرة (الضغط على الزر أو زر Enter)
+  // ربط أحداث الضغط على الزر و Enter
   document.addEventListener('click', (e) => {
     if (e.target && (e.target.id === 'sendBtn' || e.target.id === 'modalSendBtn' || e.target.closest('#sendBtn') || e.target.closest('#modalSendBtn'))) {
       e.preventDefault();
