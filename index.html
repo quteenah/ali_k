@@ -10,6 +10,20 @@
   
   <!-- أيقونات FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* تأثير غمض المؤشر أثناء الكتابة السريعة */
+    @keyframes blinkCursor {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    .typing-cursor {
+      animation: blinkCursor 0.6s infinite;
+      font-weight: bold;
+      margin-right: 2px;
+      color: var(--accent-blue, #00d9ff);
+    }
+  </style>
 </head>
 <body>
 
@@ -25,6 +39,28 @@
 
   <!-- الواجهة الرئيسية الترحيبية -->
   <main class="main-container">
+
+    <!-- شريط الرسالة الترحيبية التفاعلية بتأثير الكتابة السريعة -->
+    <div id="welcomeBanner" style="
+      background: rgba(0, 217, 255, 0.08); 
+      border: 1px solid var(--border-color, #1f293d); 
+      border-radius: 12px; 
+      padding: 10px 16px; 
+      margin: 10px auto 15px auto; 
+      max-width: 100%; 
+      text-align: center; 
+      font-size: 0.88rem; 
+      color: var(--accent-blue, #00d9ff); 
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      direction: rtl;
+    ">
+      <i class="fa-solid fa-terminal" style="font-size: 0.95rem;"></i>
+      <span id="typingText"></span><span class="typing-cursor">|</span>
+    </div>
     
     <!-- قسم الترحيب وشريط البحث -->
     <section class="hero-section">
@@ -81,17 +117,17 @@
           <div class="card-icon"><i class="fa-solid fa-image"></i></div>
           <div class="card-content">
             <h3>تحويل الصورة إلى رابط</h3>
-            <p>رفع الصورة واستخراج رابط مباشر وسريع للحافظة</p>
+            <p>رفع الصورة واستخرج رابط مباشر وسريع للحافظة</p>
           </div>
           <div class="card-arrow"><i class="fa-solid fa-arrow-left"></i></div>
         </div>
 
-        <!-- أداة صانع التغريدات -->
+        <!-- أداة صانع التغريدات SHAR X -->
         <div class="tool-card" onclick="openTweetMakerService()">
           <div class="card-icon"><i class="fa-brands fa-x-twitter"></i></div>
           <div class="card-content">
             <h3>صانع التغريدات</h3>
-            <p>إنشاء صور تغريدات تويتر وهمية باحترافية وسرعة</p>
+            <p>إنشاء صور تغريدات منصة X وهمية باحترافية وسرعة</p>
           </div>
           <div class="card-arrow"><i class="fa-solid fa-arrow-left"></i></div>
         </div>
@@ -133,6 +169,27 @@
       </div>
     </div>
   </div>
+
+  <!-- سكربت كتابة الرسالة الترحيبية السريعة -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const textToType = "أهلاً بك في Ali-K AI Box! 🚀 يتم تحديث وإضافة أدوات جديدة للموقع بشكل شبه يومي...";
+      const typingElement = document.getElementById("typingText");
+      let index = 0;
+
+      function typeWriter() {
+        if (index < textToType.length) {
+          typingElement.textContent += textToType.charAt(index);
+          index++;
+          setTimeout(typeWriter, 35); // سرعة الكتابة مثل الكيبورد
+        }
+      }
+
+      if (typingElement) {
+        typeWriter();
+      }
+    });
+  </script>
 
   <!-- استدعاء السكريبتات المستقلة -->
   <script src="js/chat.js"></script>
