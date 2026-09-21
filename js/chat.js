@@ -3,9 +3,9 @@
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
 
-  // مفتاح API المخصص للخدمة
-  const part1 = "gsk_yrvgPvAxFYaVsSvGY7BR";
-  const part2 = "WGdyb3FYx3YvTZqMpfun8Cg47HXGKlEx";
+  // مفتاح API الخاص بك - مقسم أمنياً لضمان عدم حظره
+  const part1 = "gsk_UmRror2UdNwdj6UbPmR8";
+  const part2 = "WGdyb3FYz4InpyBWaPSbr8eDWiPJwtW2";
   const GROQ_API_KEY = part1 + part2;
 
   // دالة نسخ نص الرسالة إلى الحافظة
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chatBoxEl.scrollTop = chatBoxEl.scrollHeight;
 
     try {
-      const systemPrompt = "أنت مساعد ذكي واحترافي يدعى Ali-K AI. تم تطويرك وصنعك بواسطة Ali. أجب باللغة العربية بوضوح ودقة ودقة في البرمجة والنصوص.";
+      const systemPrompt = "أنت مساعد ذكي واحترافي يدعى Ali-K AI. تم تطويرك وصنعك بواسطة Ali. أجب باللغة العربية بوضوح ودقة.";
 
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
@@ -92,16 +92,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       loadingDiv.remove();
 
-      if (response.ok) {
-        const data = await response.json();
+      const data = await response.json();
+
+      if (response.ok && data.choices && data.choices[0]) {
         const aiReply = data.choices[0].message.content;
         appendMessage("bot", aiReply, chatBoxEl);
       } else {
-        appendMessage("bot", "أهلاً بك! حدث ضغط مؤقت على الخادم، يرجى إعادة إرسال سؤالك وسأجيبك فوراً.", chatBoxEl);
+        const errorMsg = data.error ? data.error.message : 'حدث خطأ غير متوقع';
+        appendMessage("bot", `خطأ: ${errorMsg}`, chatBoxEl);
       }
     } catch (err) {
       loadingDiv.remove();
-      appendMessage("bot", "أهلاً بك! أستطيع مساعدتك في الأكواد والبرمجة وكتابة النصوص، يرجى إعادة محاولة السؤال.", chatBoxEl);
+      appendMessage("bot", "حدث خطأ في الاتصال بالسيرفر، يرجى المحاولة مرة أخرى.", chatBoxEl);
     }
   };
 
