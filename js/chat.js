@@ -1,5 +1,5 @@
 // ==========================================
-// إدارة وتفعيل ذكاء اصطناعي حقيقي (Ali-K AI)
+// إدارة وتفعيل ذكاء اصطناعي سريع المدى (Ali-K AI)
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
   
@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     container.scrollTop = container.scrollHeight;
   };
 
-  // دالة إرسال الطلب للذكاء الاصطناعي الحقيقي
+  // دالة إرسال الطلب بسرعة فائقة
   window.handleSendMessage = async function (inputEl, chatBoxEl) {
     if (!inputEl || !chatBoxEl) return;
     
@@ -36,26 +36,33 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. مؤشر الانتظار
     const loadingDiv = document.createElement("div");
     loadingDiv.style.cssText = "color: #00ffaa; font-size: 0.85rem; margin-bottom: 10px; padding: 5px;";
-    loadingDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري توليد الإجابة بواسطة الذكاء الاصطناعي...`;
+    loadingDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التفكير والإجابة...`;
     chatBoxEl.appendChild(loadingDiv);
     chatBoxEl.scrollTop = chatBoxEl.scrollHeight;
 
     try {
-      // طلب إجابة ذكية من السيرفر المجاني المباشر
-      const systemPrompt = "أنت مساعد ذكي واحترافي يدعى Ali-K AI. أجب باللغة العربية بوضوح ودقة ودقة في البرمجة والنصوص.";
-      const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?system=${encodeURIComponent(systemPrompt)}`);
-      
+      // إرسال الطلب عبر محرك سريع ومباشر بـ model سريع للرد
+      const systemPrompt = "أنت مساعد ذكي واحترافي يدعى Ali-K AI. أجب بسرعة وإيجاز ووضوح باللغة العربية.";
+      const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?system=${encodeURIComponent(systemPrompt)}&model=openai&cache=true`;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // إيقاف الانتظار الزائد لتسريع الرد
+
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
       loadingDiv.remove();
 
       if (response.ok) {
         const aiReply = await response.text();
         appendMessage("bot", aiReply, chatBoxEl);
       } else {
-        appendMessage("bot", "أهلاً بك! حدث ضغط مؤقت على الخادم، يرجى إعادة إرسال سؤالك وسأجيبك فوراً.", chatBoxEl);
+        appendMessage("bot", "أهلاً بك! أنا Ali-K AI جاهز لإجابتك، يرجى إعادة محاولة إرسال السؤال.", chatBoxEl);
       }
     } catch (err) {
       loadingDiv.remove();
-      appendMessage("bot", "أهلاً بك! أستطيع مساعدتك في الأكواد والبرمجة وكتابة النصوص، يرجى إعادة محاولة السؤال.", chatBoxEl);
+      // رد سريع بديلاً للانتظار الشديد
+      appendMessage("bot", "أهلاً بك! يمكنني مساعدتك في الأسئلة وكتابة الأكواد، أعد إرسال طلبك وسأجيبك فوراً.", chatBoxEl);
     }
   };
 });
