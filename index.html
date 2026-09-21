@@ -26,18 +26,23 @@
   <!-- الواجهة الرئيسية الترحيبية -->
   <main class="main-container">
     
-    <!-- قسم الترحيب الرئيسي -->
+    <!-- قسم الترحيب وشريط البحث -->
     <section class="hero-section">
       <div class="hero-avatar">
-        <i class="fa-solid fa-robot"></i>
+        <i class="fa-solid fa-brain"></i>
       </div>
-      <h1>مرحباً بك في منصة Ali-K الذكية 👋</h1>
-      <p>منصتك الشاملة لأدوات الذكاء الاصطناعي، البرمجة، والخدمات السريعة. اختر الأداة التي تريدها للبدء فوراً:</p>
+      <h1>ALI-K AI BOX 🧠</h1>
+      <p>منصة واحدة لجميع أدواتك: الذكاء الاصطناعي • البرمجة • الصور • الفيديو</p>
+      
+      <!-- حقل البحث السريع -->
+      <div class="search-box" style="margin-top: 15px;">
+        <input type="text" id="toolSearchInput" onkeyup="filterTools()" placeholder="🔍 ابحث عن أداة..." style="width: 100%; padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-card); color: #fff; font-size: 0.95rem; outline: none;">
+      </div>
     </section>
 
-    <!-- شبكة الأدوات المنظمة -->
+    <!-- قسم الأكثر استخداماً -->
     <section class="tools-section">
-      <h2 class="section-title"><i class="fa-solid fa-cubes"></i> الأدوات المتاحة</h2>
+      <h2 class="section-title"><i class="fa-solid fa-bolt"></i> الأكثر استخداماً</h2>
       
       <div class="tools-grid">
         
@@ -57,6 +62,16 @@
           <div class="card-content">
             <h3>البريد المؤقت (AliMail)</h3>
             <p>إنشاء إيميل مؤقت واستقبال الرسائل فوراً وبسرعة</p>
+          </div>
+          <div class="card-arrow"><i class="fa-solid fa-arrow-left"></i></div>
+        </div>
+
+        <!-- أداة تحميل الفيديو والصوت -->
+        <div class="tool-card" onclick="openDownloaderService()">
+          <div class="card-icon"><i class="fa-solid fa-download"></i></div>
+          <div class="card-content">
+            <h3>تحميل المقاطع والصوتيات</h3>
+            <p>تحميل من يوتيوب، فيسبوك، تيك توك، ومنصة X مجاناً</p>
           </div>
           <div class="card-arrow"><i class="fa-solid fa-arrow-left"></i></div>
         </div>
@@ -103,6 +118,7 @@
   <script src="js/chat.js"></script>
   <script src="js/app.js"></script>
   <script src="js/mail.js"></script>
+  <script src="js/downloader.js"></script>
   <script src="js/bg-remover.js"></script>
   <script src="js/termux.js"></script>
 
