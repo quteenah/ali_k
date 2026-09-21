@@ -1,9 +1,134 @@
-  <!-- استدعاء ملفات السكريبت المستقلة لكل أداة -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منصة علي الذكية - Ali-K</title>
+  
+  <!-- CSS الرئيسي -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- أيقونات FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- ==================== الهيدر والشريط العلوي ==================== -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo">
+        <i class="fa-solid fa-robot"></i>
+        <span>Ali-K AI</span>
+      </div>
+      
+      <nav class="main-nav">
+        <button class="nav-item active"><i class="fa-solid fa-comments"></i> الدردشة</button>
+        <button class="nav-item" onclick="openAiToolsService()"><i class="fa-solid fa-wand-magic-sparkles"></i> الأدوات الذكية</button>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-btn" title="الوضع الليلي"><i class="fa-solid fa-moon"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== المحتوى الرئيسي ==================== -->
+  <main class="main-container">
+    
+    <!-- قسم الأوامر السريعة / البطاقات العلوية -->
+    <section class="quick-cards-section">
+      <div class="cards-grid">
+        
+        <!-- كارت البريد المؤقت -->
+        <div class="feature-card" id="mailCard">
+          <div class="card-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+          <div class="card-info">
+            <h3>البريد المؤقت</h3>
+            <p>إنشاء إيميل مؤقت واستقبال الرسائل فوراً</p>
+          </div>
+        </div>
+
+        <!-- كارت إزالة الخلفية -->
+        <div class="feature-card" id="bgRemoverCard">
+          <div class="card-icon"><i class="fa-solid fa-image"></i></div>
+          <div class="card-info">
+            <h3>إزالة الخلفية</h3>
+            <p>تفريق خلفية الصور مجاناً وبدقة</p>
+          </div>
+        </div>
+
+        <!-- كارت أدوات AI ومحاكي Termux -->
+        <div class="feature-card" id="aiToolsCard">
+          <div class="card-icon"><i class="fa-solid fa-terminal"></i></div>
+          <div class="card-info">
+            <h3>محاكي Termux والأدوات</h3>
+            <p>تجربة الأوامر وأدوات البرمجة الذكية</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- قسم اقتراحات الأوامر السريعة Quick Prompts -->
+    <section class="quick-prompts">
+      <button class="prompt-btn"><i class="fa-solid fa-lightbulb"></i> اقترح فكرة مشروع</button>
+      <button class="prompt-btn"><i class="fa-solid fa-file-lines"></i> اكتب نص متكامل</button>
+      <button class="prompt-btn"><i class="fa-solid fa-bug"></i> أصلح خطأ برمجي</button>
+      <button class="prompt-btn"><i class="fa-solid fa-code"></i> اكتب كود برمجي</button>
+    </section>
+
+    <!-- منطقة محادثة AI Chat -->
+    <section class="chat-section">
+      <div class="chat-box" id="chatBox">
+        <div class="bot-message">
+          <div class="message-avatar"><i class="fa-solid fa-robot"></i></div>
+          <div class="message-content">
+            مرحباً بك! أنا مساعدك الذكي Ali-K. كيف يمكنني مساعدتك اليوم في البرمجة، الكتابة، أو استخدام الأدوات؟
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- شريط إدخال الرسائل والأوامر -->
+    <section class="input-section">
+      <div class="input-container">
+        <button class="attach-btn" id="imgBtn" title="إرفاق صورة"><i class="fa-solid fa-image"></i></button>
+        <button class="attach-btn" id="fileBtn" title="إرفاق ملف"><i class="fa-solid fa-paperclip"></i></button>
+        
+        <textarea id="userInput" placeholder="اكتب سؤالك أو أمرك هنا..." rows="1"></textarea>
+        
+        <button class="send-btn" id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== النافذة المنبثقة للأدوات (Modal) ==================== -->
+  <div class="modal-overlay" id="modalContainer" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTitle">عنوان الخدمة</h3>
+        <button class="close-btn" id="closeModalBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- المحتوى يتغير ديناميكياً بناءً على الأداة المفتوحة -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== شريط الوصول السريع السفلي ==================== -->
+  <footer class="bottom-bar">
+    <button id="bottomMailBtn"><i class="fa-solid fa-envelope"></i> البريد المؤقت</button>
+    <button id="bottomBgBtn"><i class="fa-solid fa-scissors"></i> إزالة الخلفية</button>
+    <button onclick="openTermuxService()"><i class="fa-solid fa-terminal"></i> Termux</button>
+  </footer>
+
+  <!-- ==================== استدعاء ملفات الـ JavaScript ==================== -->
   <script src="js/chat.js"></script>
   <script src="js/app.js"></script>
   <script src="js/mail.js"></script>
   <script src="js/bg-remover.js"></script>
   <script src="js/termux.js"></script>
+
 </body>
 </html>
- 
