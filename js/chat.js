@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatHistory = [
     {
       role: "system",
-      content: "أنت مساعد ذكي واحترافي اسمك AI وتم تطويرك وصنعك بواسطة علي (Ali). أجب باللغة العربية بوضوح ودقة عالية وبإيجاز وسرعة."
+      content: "أنت مساعد ذكي واحترافي اسمك AI وتم تطويرك وصنعك بواسطة علي (Ali). أجب باللغة العربية بوضوح ودقة عالية، وقم بإجابة كافة الأسئلة والطلبات البرمجية والشروحات بدون امتناع."
     }
   ];
 
@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // دالة إرسال الرسالة وجلب الإجابة بسرعة عالية
+  // دالة إرسال الرسالة وجلب الإجابة
   window.handleSendMessage = async function () {
     const inputEl = document.querySelector('input[type="text"], textarea, #userInput, #modalChatInput, .cyber-input');
     const chatBoxEl = document.querySelector('#chat-box, #modalChatBox, .cyber-chat-box, .chat-messages');
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const prompt = inputEl.value.trim();
     if (!prompt) return;
 
-    // 1. إضافة سؤال المستخدم
+    // 1. إضافة سؤال المستخدم إلى الشاشة والذاكرة
     const userDiv = document.createElement("div");
     userDiv.className = "msg-user";
     userDiv.innerHTML = `<div class="tag">YOU</div><div class="msg-content">${prompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
@@ -139,13 +139,13 @@ document.addEventListener("DOMContentLoaded", () => {
     chatBoxEl.scrollTop = chatBoxEl.scrollHeight;
 
     try {
-      // تم تغيير النموذج إلى llama لضمان الاستجابة السريعة جداً
+      // إرسال الذاكرة الكاملة للسيرفر مع نموذج openai المستقر
       const response = await fetch("https://text.pollinations.ai/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: chatHistory,
-          model: "llama"
+          model: "openai"
         })
       });
 
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response.ok) {
         const aiReply = await response.text();
         
-        // حفظ الرد في السجل
+        // حفظ رد الذكاء الاصطناعي في الذاكرة للسؤال القادم
         chatHistory.push({ role: "assistant", content: aiReply });
 
         const aiDiv = document.createElement("div");
