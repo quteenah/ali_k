@@ -1,47 +1,61 @@
-document.addEventListener("DOMContentLoaded", () => {
+// ==========================================
+// إدارة النافذة المنبثقة الشاملة (Modal System)
+// ==========================================
+
+// دالة فتح النافذة لأي أداة
+window.openServiceModal = function (title, contentHtml, isFullScreen = false) {
   const modalContainer = document.getElementById("modalContainer");
   const modalCard = document.getElementById("modalCard");
   const modalTitle = document.getElementById("modalTitle");
   const modalBody = document.getElementById("modalBody");
-  const closeModalBtn = document.getElementById("closeModalBtn");
 
-  window.openServiceModal = function (title, contentHtml, isFullScreen = false) {
-    modalTitle.textContent = title;
-    modalBody.innerHTML = contentHtml;
-    
-    if (isFullScreen) {
-      modalCard.classList.add("full-screen-modal");
-    } else {
-      modalCard.classList.remove("full-screen-modal");
-    }
+  if (!modalContainer || !modalCard || !modalTitle || !modalBody) return;
 
-    modalContainer.style.display = "flex";
-  };
+  // تعيين العنوان والمحتوى
+  modalTitle.textContent = title;
+  modalBody.innerHTML = contentHtml;
 
-  closeModalBtn?.addEventListener("click", () => {
-    modalContainer.style.display = "none";
-    modalBody.innerHTML = "";
+  // التحكم بملء الشاشة للأدوات الكبيرة مثل البريد
+  if (isFullScreen) {
+    modalCard.classList.add("full-screen-modal");
+  } else {
     modalCard.classList.remove("full-screen-modal");
-  });
+  }
 
-  window.openAiChatModal = function () {
-    openServiceModal(
-      "💬 محادثة الذكاء الاصطناعي (Ali-K AI)",
-      `
-      <div style="display: flex; flex-direction: column; height: 440px;">
-        <div id="modalChatBox" style="flex: 1; overflow-y: auto; background: #0b0f19; padding: 12px; border-radius: 8px; border: 1px solid #1e293b; display: flex; flex-direction: column;">
-          <div style="background: #1e293b; color: #00ffaa; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size:0.9rem;">
-            👋 مرحباً! أنا Ali. كيف يمكنني مساعدتك اليوم؟
-          </div>
-        </div>
-        <div style="display: flex; gap: 8px; margin-top: 10px;">
-          <input type="text" id="modalChatInput" style="flex: 1; background: #131b2e; border: 1px solid #2a3859; color: #fff; padding: 10px 14px; border-radius: 8px; outline: none; font-size:0.95rem;" placeholder="اكتب سؤالك هنا...">
-          <button id="modalSendBtn" class="action-btn-modal" style="padding: 10px 18px; cursor:pointer;">إرسال 🚀</button>
-        </div>
-      </div>
-      `,
-      false
-    );
-  };
+  // إظهار النافذة
+  modalContainer.style.display = "flex";
+  document.body.style.overflow = "hidden"; // منع التمرير في الخلفية
+};
+
+// دالة إغلاق النافذة والعودة للشاشة الرئيسية
+window.closeServiceModal = function () {
+  const modalContainer = document.getElementById("modalContainer");
+  const modalBody = document.getElementById("modalBody");
+
+  if (modalContainer) {
+    modalContainer.style.display = "none";
+    if (modalBody) modalBody.innerHTML = ""; // تفريغ المحتوى لتخفيف الذاكرة
+    document.body.style.overflow = "auto"; // إعادة التمرير
+  }
+};
+
+// ربط أحداث الإغلاق
+document.addEventListener("DOMContentLoaded", () => {
+  const closeModalBtn = document.getElementById("closeModalBtn");
+  const modalContainer = document.getElementById("modalContainer");
+
+  // الإغلاق عند الضغط على زر X
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener("click", window.closeServiceModal);
+  }
+
+  // الإغلاق عند الضغط خارج النافذة
+  if (modalContainer) {
+    modalContainer.addEventListener("click", (e) => {
+      if (e.target === modalContainer) {
+        window.closeServiceModal();
+      }
+    });
+  }
 });
  
