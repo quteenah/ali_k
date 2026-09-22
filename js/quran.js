@@ -4,8 +4,8 @@
 
 const QURAN_API = "https://api.alquran.cloud/v1";
 
-// رابط الصورة المباشر والآمن لضمان التحميل على Vercel
-const QURAN_LOGO_IMG = "https://i.ibb.co/3kWy96p/quran-logo.png";
+// مسار الصورة المحلي داخل مجلد images
+const QURAN_LOGO_IMG = "images/quran-logo.png";
 
 let quranSurahsList = [];
 
@@ -16,7 +16,7 @@ function openQuranService() {
 
   if (!modal || !title || !body) return;
 
-  // عنوان النافذة المنبثقة مع صورة القرآن
+  // عنوان النافذة المنبثقة مع صورة القرآن المحلية
   title.innerHTML = `
     <div style="display: flex; align-items: center; gap: 10px;">
       <img src="${QURAN_LOGO_IMG}" alt="القرآن الكريم" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #00d9ff;">
