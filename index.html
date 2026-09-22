@@ -37,9 +37,9 @@
         <span>Ali-K AI Box</span>
       </div>
 
-      <!-- زر القرآن الكريم بالأيقونة المدمجة Mapped to FontAwesome -->
-      <button onclick="openQuranService()" title="القرآن الكريم" style="background: rgba(0, 217, 255, 0.1); border: 1px solid #00d9ff; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; color: #00d9ff; transition: all 0.2s ease; box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);">
-        <i class="fa-solid fa-quran" style="font-size: 1.2rem;"></i>
+      <!-- زر القرآن الكريم باستخدام مجلد الصور المحلي -->
+      <button onclick="openQuranService()" title="القرآن الكريم" style="background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 2px; transition: transform 0.2s ease;">
+        <img src="images/quran-logo.png" alt="القرآن الكريم" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1.5px solid #00d9ff; box-shadow: 0 0 10px rgba(0, 217, 255, 0.4);">
       </button>
 
     </div>
@@ -214,7 +214,6 @@
 
   <!-- السكربت الإداري للربط وتشغيل الأزرار -->
   <script>
-    // دالة فتح الشات المحدثة
     function openAiChatModal() {
       const modal = document.getElementById("modalContainer");
       const title = document.getElementById("modalTitle");
@@ -246,7 +245,6 @@
       modal.style.display = "flex";
     }
 
-    // دالة مخصصة تضمن تنفيذ الإرسال بشكل مباشر وسليم
     function sendCustomMessage() {
       const input = document.getElementById('userInput');
       if (input && input.value.trim() !== '') {
@@ -256,19 +254,16 @@
       }
     }
 
-    // دالة إغلاق النافذة المنبثقة
     function closeModal() {
       const modal = document.getElementById("modalContainer");
       if (modal) modal.style.display = "none";
     }
 
-    // إغلاق عند الضغط خارج المربع
     window.addEventListener('click', function(event) {
       const modal = document.getElementById("modalContainer");
       if (event.target === modal) closeModal();
     });
 
-    // تأثير النص الترحيبي
     document.addEventListener("DOMContentLoaded", function () {
       const textToType = "أهلاً بك في Ali-K AI Box! 🚀 يتم تحديث وإضافة أدوات جديدة للموقع بشكل شبه يومي...";
       const typingElement = document.getElementById("typingText");
@@ -302,4 +297,4 @@
 
 </body>
 </html>
-  
+ 
