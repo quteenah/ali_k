@@ -11,6 +11,11 @@
   <!-- أيقونات FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <!-- استدعاء خط المصحف الشريف العثماني من Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
   <style>
     /* تأثير غمز المؤشر أثناء الكتابة السريعة */
     @keyframes blinkCursor {
@@ -37,7 +42,7 @@
         <span>Ali-K AI Box</span>
       </div>
 
-      <!-- زر القرآن الكريم باستخدام مجلد الصور المحلي -->
+      <!-- زر القرآن الكريم باستخدام الصورة المحلية -->
       <button onclick="openQuranService()" title="القرآن الكريم" style="background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 2px; transition: transform 0.2s ease;">
         <img src="images/quran-logo.png" alt="القرآن الكريم" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1.5px solid #00d9ff; box-shadow: 0 0 10px rgba(0, 217, 255, 0.4);">
       </button>
@@ -297,4 +302,3 @@
 
 </body>
 </html>
- 
