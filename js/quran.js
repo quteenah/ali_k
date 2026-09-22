@@ -16,7 +16,7 @@ function openQuranService() {
 
   if (!modal || !title || !body) return;
 
-  // عنوان النافذة المنبثقة مع صورة القرآن المحلية
+  // عنوان النافذة المنبثقة
   title.innerHTML = `
     <div style="display: flex; align-items: center; gap: 10px;">
       <img src="${QURAN_LOGO_IMG}" alt="القرآن الكريم" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #00d9ff;">
@@ -109,7 +109,7 @@ function renderSurahsGrid(list) {
     
     btn.innerHTML = `
       <div style="font-size: 0.8rem; color: #00d9ff; font-weight: bold;">${surah.number}</div>
-      <div style="font-size: 0.95rem; font-weight: bold; margin-top: 2px;">${surah.name}</div>
+      <div style="font-size: 1.1rem; font-weight: bold; margin-top: 2px; font-family: 'Amiri Quran', 'Amiri', serif;">${surah.name}</div>
     `;
 
     btn.addEventListener("click", () => loadSurahContent(surah.number));
@@ -136,43 +136,79 @@ async function loadSurahContent(number) {
   }
 }
 
-// عرض نص السورة
+// عرض نص السورة بخط المصحف العثماني
 function renderSurahContent(surah) {
   const view = document.getElementById("quranView");
   if (!view) return;
 
   let html = `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <button onclick="backToSurahsList()" style="background: #1e293b; color: #00d9ff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <button onclick="backToSurahsList()" style="background: #1e293b; color: #00d9ff; border: 1px solid #00d9ff; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold; transition: 0.2s;">
         ← قائمة السور
       </button>
-      <h3 style="margin: 0; color: #fff; display: flex; align-items: center; gap: 6px;">
+      <h3 style="margin: 0; color: #fff; font-family: 'Amiri Quran', 'Amiri', serif; font-size: 1.4rem;">
         سورة ${surah.name}
       </h3>
     </div>
   `;
 
+  // البسملة
   if (surah.number !== 9) {
     html += `
-      <div style="text-align: center; font-size: 1.2rem; color: #00d9ff; margin: 15px 0; font-family: 'Amiri', serif;">
+      <div style="text-align: center; font-size: 1.8rem; color: #ffb703; margin: 20px 0; font-family: 'Amiri Quran', 'Amiri', serif; line-height: 1.8;">
         بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
       </div>
     `;
   }
 
-  html += `<div style="line-height: 2.2; font-size: 1.15rem; text-align: justify; direction: rtl; background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #1e293b;">`;
+  // حاوية الآيات العثمانية
+  html += `
+    <div style="
+      line-height: 2.8; 
+      font-size: 1.55rem; 
+      text-align: justify; 
+      direction: rtl; 
+      background: #090d16; 
+      padding: 20px; 
+      border-radius: 12px; 
+      border: 1px solid #1e293b; 
+      font-family: 'Amiri Quran', 'Amiri', serif;
+      color: #f8fafc;
+      word-spacing: 2px;
+    ">
+  `;
 
   surah.ayahs.forEach(ayah => {
+    let text = ayah.text;
+    // معالجة البسملة المدمجة بالآية الأولى
+    if (surah.number !== 1 && ayah.numberInSurah === 1) {
+      text = text.replace("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", "").trim();
+    }
+
     html += `
-      <span>${ayah.text}</span>
-      <span style="display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; border: 1px solid #00d9ff; color: #00d9ff; font-size: 0.75rem; margin: 0 4px;">${ayah.numberInSurah}</span>
+      <span>${text}</span>
+      <span style="
+        display: inline-flex; 
+        align-items: center; 
+        justify-content: center; 
+        width: 32px; 
+        height: 32px; 
+        border-radius: 50%; 
+        border: 1.5px solid #00d9ff; 
+        color: #00d9ff; 
+        font-size: 0.85rem; 
+        font-family: system-ui, sans-serif;
+        margin: 0 6px; 
+        vertical-align: middle;
+        background: rgba(0, 217, 255, 0.05);
+      ">${ayah.numberInSurah}</span>
     `;
   });
 
   html += `</div>`;
 
   html += `
-    <button onclick="backToSurahsList()" style="width: 100%; margin-top: 12px; background: #1e293b; color: #00d9ff; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+    <button onclick="backToSurahsList()" style="width: 100%; margin-top: 15px; background: #1e293b; color: #00d9ff; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.95rem;">
       ← العودة لقائمة السور
     </button>
   `;
