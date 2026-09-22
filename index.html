@@ -29,11 +29,19 @@
 
   <!-- الهيدر العلوي -->
   <header class="app-header">
-    <div class="header-container">
+    <div class="header-container" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px;">
+      
+      <!-- اللوجو الأيمن -->
       <div class="logo">
         <i class="fa-solid fa-brain"></i>
         <span>Ali-K AI Box</span>
       </div>
+
+      <!-- زر القرآن الكريم في الجانب المقابل (مكان العلامة الحمراء) -->
+      <button onclick="openQuranService()" title="القرآن الكريم" style="background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; transition: transform 0.2s ease;">
+        <img src="https://i.ibb.co/68v8L54/quran-icon.png" alt="القرآن الكريم" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1.5px solid #00d9ff; box-shadow: 0 0 8px rgba(0, 217, 255, 0.4);">
+      </button>
+
     </div>
   </header>
 
@@ -290,7 +298,7 @@
   <script src="js/pdf2jpg.js"></script>
   <script src="js/qr_tool.js"></script>
   <script src="js/pdf_maker.js"></script>
+  <script src="js/quran.js"></script>
 
 </body>
 </html>
- 
