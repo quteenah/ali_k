@@ -1,13 +1,13 @@
 // ==========================================
-// أداة تحويل الصور إلى روابط متعددة (Ali-K Multi Image Uploader)
+// أداة تحويل الصور إلى روابط متعددة (Ali-K Multi Image Uploader - Fixed V2)
 // ==========================================
 
 window.openImageUploaderService = function () {
   const uploaderHtml = `
     <div style="display: flex; flex-direction: column; gap: 12px; padding: 5px; text-align: center;">
       
-      <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
-        اختر صورة من جهازك لرفعها فوراً واستخراج 10+ روابط مباشرة من سيرفرات عالمية مختلفة:
+      <p style="font-size: 0.85rem; color: var(--text-secondary, #94a3b8); margin: 0;">
+        اختر صورة لرفعها فوراً واستخراج أكثر من 10 روابط مباشرة عبر سيرفرات عالمية معالجة ضد الحظر:
       </p>
 
       <!-- منطقة اختيار الصورة -->
@@ -83,7 +83,7 @@ window.onFileSelected = function (input) {
   }
 };
 
-// دالة الرفع المتوازي للـ 10 سيرفرات
+// دالة الرفع المتوازي للسيرفرات مع إصلاح CORS
 window.uploadImageToMultipleProviders = async function () {
   const fileInput = document.getElementById("imgFileInput");
   const status = document.getElementById("uploadStatus");
@@ -99,7 +99,7 @@ window.uploadImageToMultipleProviders = async function () {
 
   status.style.display = "block";
   status.style.color = "#00d9ff";
-  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الصورة إلى 10+ سيرفرات معاً...`;
+  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الصورة وتوليد الروابط...`;
   
   btn.disabled = true;
   btn.style.opacity = "0.6";
@@ -107,21 +107,23 @@ window.uploadImageToMultipleProviders = async function () {
   resultsContainer.style.display = "flex";
   resultsContainer.innerHTML = "";
 
-  // قائمة السيرفرات المتاحة للرفع المباشر
+  // قائمة 12 سيرفر معالجة ومضمونة
   const providers = [
-    { name: "qu.ax (سريع جداً)", uploadFn: uploadToQuAx },
-    { name: "Catbox (دائم)", uploadFn: uploadToCatbox },
-    { name: "TmpFiles (مباشر)", uploadFn: uploadToTmpFiles },
-    { name: "Litterbox (مؤقت)", uploadFn: uploadToLitterbox },
+    { name: "TmpFiles (سريع ومباشر)", uploadFn: uploadToTmpFiles },
+    { name: "ImgBB (دائم وسريع)", uploadFn: uploadToImgBB },
     { name: "FreeImage (جودة عالية)", uploadFn: uploadToFreeImage },
-    { name: "File.io (مشاركة آمنة)", uploadFn: uploadToFileIo },
-    { name: "0x0.st (خفيف)", uploadFn: uploadToNullPointer },
-    { name: "envs.sh (مباشر)", uploadFn: uploadToEnvs },
-    { name: "bashupload (سريع)", uploadFn: uploadToBashUpload },
-    { name: "pixeldrain (مستقر)", uploadFn: uploadToPixeldrain }
+    { name: "Pixeldrain (مستقر)", uploadFn: uploadToPixeldrain },
+    { name: "File.io (آمن)", uploadFn: uploadToFileIo },
+    { name: "Telegraph (سريع جداً)", uploadFn: uploadToTelegraph },
+    { name: "Qu.ax (معالج CORS)", uploadFn: uploadToQuAxProxy },
+    { name: "Catbox (دائم - معالج)", uploadFn: uploadToCatboxProxy },
+    { name: "Litterbox (مؤقت - معالج)", uploadFn: uploadToLitterboxProxy },
+    { name: "0x0.st (خفيف - معالج)", uploadFn: uploadToNullPointerProxy },
+    { name: "Envs.sh (مباشر - معالج)", uploadFn: uploadToEnvsProxy },
+    { name: "PostImages (دائم وسريع)", uploadFn: uploadToPostImages }
   ];
 
-  // تجهيز عناصر العرض لكل سيرفر بحالة الانتظار
+  // إنشاء عناصر العرض لكل سيرفر
   providers.forEach((provider, index) => {
     const card = document.createElement("div");
     card.id = `provider-card-${index}`;
@@ -153,7 +155,7 @@ window.uploadImageToMultipleProviders = async function () {
 
   let successCount = 0;
 
-  // تشغيل عمليات الرفع بالتوازي لجميع السيرفرات
+  // تشغيل الرفع المتوازي
   const uploadPromises = providers.map(async (provider, index) => {
     const statusLabel = document.getElementById(`provider-status-${index}`);
     const resultBox = document.getElementById(`provider-result-${index}`);
@@ -161,14 +163,14 @@ window.uploadImageToMultipleProviders = async function () {
 
     try {
       const url = await provider.uploadFn(file);
-      if (url) {
+      if (url && url.startsWith("http")) {
         statusLabel.innerHTML = `✅ تم الرفع`;
         statusLabel.style.color = "#00ffaa";
         linkInput.value = url;
         resultBox.style.display = "flex";
         successCount++;
       } else {
-        throw new Error("فشل الرفع");
+        throw new Error("رابط غير صالح");
       }
     } catch (e) {
       statusLabel.innerHTML = `❌ متعذر`;
@@ -179,134 +181,136 @@ window.uploadImageToMultipleProviders = async function () {
   await Promise.allSettled(uploadPromises);
 
   status.style.color = successCount > 0 ? "#00ffaa" : "#ff4d4d";
-  status.innerHTML = `اكتملت العملية! تم رفع الصورة بنجاح على (${successCount} من أصل ${providers.length}) سيرفرات.`;
+  status.innerHTML = `اكتملت العملية! تم استخراج (${successCount} من أصل ${providers.length}) روابط بنجاح.`;
 
   btn.disabled = false;
   btn.style.opacity = "1";
 };
 
 // ==========================================
-// دواء API السيرفرات المختلفة
+// السيرفرات والدوال المعدلة لمعالجة مشاكل الرفع
 // ==========================================
 
-// 1. qu.ax
-async function uploadToQuAx(file) {
-  const fd = new FormData();
-  fd.append("files[]", file);
-  const res = await fetch("https://qu.ax/upload.php", { method: "POST", body: fd });
-  const data = await res.json();
-  if (data && data.success && data.files && data.files[0]) {
-    return data.files[0].url;
-  }
-  return null;
-}
-
-// 2. Catbox
-async function uploadToCatbox(file) {
-  const fd = new FormData();
-  fd.append("reqtype", "fileupload");
-  fd.append("fileToUpload", file);
-  const res = await fetch("https://catbox.moe/user/api.php", { method: "POST", body: fd });
-  const text = await res.text();
-  if (text && text.startsWith("http")) return text.trim();
-  return null;
-}
-
-// 3. TmpFiles
+// 1. TmpFiles
 async function uploadToTmpFiles(file) {
   const fd = new FormData();
   fd.append("file", file);
   const res = await fetch("https://tmpfiles.org/api/v1/upload", { method: "POST", body: fd });
   const data = await res.json();
-  if (data && data.status === "success" && data.data && data.data.url) {
+  if (data?.status === "success" && data?.data?.url) {
     return data.data.url.replace("tmpfiles.org/", "tmpfiles.org/dl/");
   }
   return null;
 }
 
-// 4. Litterbox
-async function uploadToLitterbox(file) {
+// 2. ImgBB
+async function uploadToImgBB(file) {
   const fd = new FormData();
-  fd.append("reqtype", "fileupload");
-  fd.append("time", "1h");
-  fd.append("fileToUpload", file);
-  const res = await fetch("https://litterbox.catbox.moe/resources/internals/api.php", { method: "POST", body: fd });
-  const text = await res.text();
-  if (text && text.startsWith("http")) return text.trim();
-  return null;
+  fd.append("image", file);
+  const res = await fetch("https://api.imgbb.com/1/upload?key=c2b1848ff3c69cefe1bc1f2c2533036e", { method: "POST", body: fd });
+  const data = await res.json();
+  return data?.data?.url || null;
 }
 
-// 5. FreeImage.host
+// 3. FreeImage.host
 async function uploadToFreeImage(file) {
   const fd = new FormData();
-  fd.append("key", "6d207e02198a847aa98d0a2a901485a5"); // مفتاح عام مجاني
+  fd.append("key", "6d207e02198a847aa98d0a2a901485a5");
   fd.append("action", "upload");
   fd.append("source", file);
   const res = await fetch("https://freeimage.host/api/1/upload", { method: "POST", body: fd });
   const data = await res.json();
-  if (data && data.image && data.image.url) {
-    return data.image.url;
-  }
-  return null;
+  return data?.image?.url || null;
 }
 
-// 6. File.io
-async function uploadToFileIo(file) {
-  const fd = new FormData();
-  fd.append("file", file);
-  const res = await fetch("https://file.io", { method: "POST", body: fd });
-  const data = await res.json();
-  if (data && data.success && data.link) {
-    return data.link;
-  }
-  return null;
-}
-
-// 7. 0x0.st / NullPointer
-async function uploadToNullPointer(file) {
-  const fd = new FormData();
-  fd.append("file", file);
-  const res = await fetch("https://0x0.st", { method: "POST", body: fd });
-  const text = await res.text();
-  if (text && text.startsWith("http")) return text.trim();
-  return null;
-}
-
-// 8. Envs.sh
-async function uploadToEnvs(file) {
-  const fd = new FormData();
-  fd.append("file", file);
-  const res = await fetch("https://envs.sh", { method: "POST", body: fd });
-  const text = await res.text();
-  if (text && text.startsWith("http")) return text.trim();
-  return null;
-}
-
-// 9. BashUpload
-async function uploadToBashUpload(file) {
-  const res = await fetch(`https://bashupload.com/${encodeURIComponent(file.name)}`, {
-    method: "PUT",
-    body: file
-  });
-  const text = await res.text();
-  const match = text.match(/https:\/\/bashupload\.com\/[^\s]+/);
-  if (match) return match[0];
-  return null;
-}
-
-// 10. Pixeldrain
+// 4. Pixeldrain
 async function uploadToPixeldrain(file) {
   const fd = new FormData();
   fd.append("file", file);
   const res = await fetch("https://pixeldrain.com/api/file", { method: "POST", body: fd });
   const data = await res.json();
-  if (data && data.id) {
-    return `https://pixeldrain.com/api/file/${data.id}`;
-  }
-  return null;
+  return data?.id ? `https://pixeldrain.com/api/file/${data.id}` : null;
 }
 
-// دالة النسخ الفردية
+// 5. File.io
+async function uploadToFileIo(file) {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch("https://file.io", { method: "POST", body: fd });
+  const data = await res.json();
+  return data?.success ? data.link : null;
+}
+
+// 6. Telegraph
+async function uploadToTelegraph(file) {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch("https://telegra.ph/upload", { method: "POST", body: fd });
+  const data = await res.json();
+  return data?.[0]?.src ? `https://telegra.ph${data[0].src}` : null;
+}
+
+// 7. Qu.ax (عبر وكيل البروكسي لتخطي CORS)
+async function uploadToQuAxProxy(file) {
+  const fd = new FormData();
+  fd.append("files[]", file);
+  const res = await fetch("https://corsproxy.io/?https://qu.ax/upload.php", { method: "POST", body: fd });
+  const data = await res.json();
+  return data?.files?.[0]?.url || null;
+}
+
+// 8. Catbox (عبر البروكسي)
+async function uploadToCatboxProxy(file) {
+  const fd = new FormData();
+  fd.append("reqtype", "fileupload");
+  fd.append("fileToUpload", file);
+  const res = await fetch("https://corsproxy.io/?https://catbox.moe/user/api.php", { method: "POST", body: fd });
+  const text = await res.text();
+  return text.startsWith("http") ? text.trim() : null;
+}
+
+// 9. Litterbox (عبر البروكسي)
+async function uploadToLitterboxProxy(file) {
+  const fd = new FormData();
+  fd.append("reqtype", "fileupload");
+  fd.append("time", "24h");
+  fd.append("fileToUpload", file);
+  const res = await fetch("https://corsproxy.io/?https://litterbox.catbox.moe/resources/internals/api.php", { method: "POST", body: fd });
+  const text = await res.text();
+  return text.startsWith("http") ? text.trim() : null;
+}
+
+// 10. 0x0.st (عبر البروكسي)
+async function uploadToNullPointerProxy(file) {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch("https://corsproxy.io/?https://0x0.st", { method: "POST", body: fd });
+  const text = await res.text();
+  return text.startsWith("http") ? text.trim() : null;
+}
+
+// 11. Envs.sh (عبر البروكسي)
+async function uploadToEnvsProxy(file) {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch("https://corsproxy.io/?https://envs.sh", { method: "POST", body: fd });
+  const text = await res.text();
+  return text.startsWith("http") ? text.trim() : null;
+}
+
+// 12. PostImages
+async function uploadToPostImages(file) {
+  const fd = new FormData();
+  fd.append("optsize", "0");
+  fd.append("expire", "0");
+  fd.append("numfiles", "1");
+  fd.append("file", file);
+  const res = await fetch("https://corsproxy.io/?https://postimages.org/json/html", { method: "POST", body: fd });
+  const data = await res.json();
+  return data?.url || null;
+}
+
+// دالة النسخ الحافظة
 window.copySpecificLink = function (inputId) {
   const linkInput = document.getElementById(inputId);
   if (linkInput && linkInput.value) {
