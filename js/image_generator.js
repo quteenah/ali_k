@@ -1,5 +1,5 @@
 // ==========================================
-// أداة توليد الصور بالذكاء الاصطناعي (Ali-K AI Image Generator - V1)
+// أداة توليد الصور بالذكاء الاصطناعي (Ali-K AI Image Generator - Direct Fix)
 // ==========================================
 
 window.openImageGeneratorService = function () {
@@ -16,7 +16,7 @@ window.openImageGeneratorService = function () {
         <textarea 
           id="aiPromptInput" 
           rows="3" 
-          placeholder="مثال: A futuristic cyberpunk city with neon lights, 8k resolution, highly detailed..."
+          placeholder="مثال: A girl hugs a cat, highly detailed, 8k..."
           style="
             width: 100%;
             padding: 10px;
@@ -93,7 +93,7 @@ window.openImageGeneratorService = function () {
           <img id="aiOutputImg" src="" alt="AI Output" style="max-width: 100%; max-height: 350px; object-fit: contain;" />
         </div>
 
-        <!-- أزرار التفاعل مع الصورة -->
+        <!-- أزرار التفاعل -->
         <div style="display: flex; width: 100%; gap: 8px;">
           <a id="downloadAiImgBtn" href="" target="_blank" download="ai-image.jpg" style="flex: 1; text-align: center; padding: 8px; background: #00ffaa; color: #000; font-weight: bold; border-radius: 6px; text-decoration: none; font-size: 0.8rem;">
             <i class="fa-solid fa-download"></i> تحميل الصورة
@@ -112,9 +112,7 @@ window.openImageGeneratorService = function () {
   }
 };
 
-const GENERATE_API_ENDPOINT = "/api/generate-image";
-
-window.generateAiImage = async function () {
+window.generateAiImage = function () {
   const promptInput = document.getElementById("aiPromptInput");
   const styleSelect = document.getElementById("aiStyleSelect");
   const sizeSelect = document.getElementById("aiSizeSelect");
@@ -132,6 +130,7 @@ window.generateAiImage = async function () {
 
   const [width, height] = sizeSelect.value.split("x").map(Number);
   const style = styleSelect.value;
+  const fullPrompt = style ? `${prompt}, ${style}` : prompt;
 
   status.style.display = "block";
   status.style.color = "#a855f7";
@@ -141,34 +140,33 @@ window.generateAiImage = async function () {
   btn.style.opacity = "0.6";
   resultContainer.style.display = "none";
 
-  try {
-    const res = await fetch(GENERATE_API_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, style, width, height })
-    });
+  // توليد برقم عشوائي للحصول على نتيجة مختلفة في كل مرة
+  const seed = Math.floor(Math.random() * 1000000);
+  const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${width}&height=${height}&seed=${seed}&nologo=true`;
 
-    const data = await res.json();
-
-    if (!res.ok || !data.success) {
-      throw new Error(data.error || "فشل خادم التوليد");
-    }
-
-    // عرض الصورة
-    outputImg.src = data.imageUrl;
-    downloadBtn.href = data.imageUrl;
+  // تحميل الصورة وتجهيزها مباشرة
+  const imgLoader = new Image();
+  imgLoader.onload = function () {
+    outputImg.src = imageUrl;
+    downloadBtn.href = imageUrl;
     
     status.style.color = "#00ffaa";
     status.innerHTML = `✅ تم توليد الصورة بنجاح!`;
     resultContainer.style.display = "flex";
 
-  } catch (e) {
-    status.style.color = "#ff4d4d";
-    status.innerHTML = `❌ تعذر توليد الصورة: ${e.message}`;
-  } finally {
     btn.disabled = false;
     btn.style.opacity = "1";
-  }
+  };
+
+  imgLoader.onerror = function () {
+    status.style.color = "#ff4d4d";
+    status.innerHTML = `❌ تعذر تحميل الصورة، يرجى المحاولة مرة أخرى.`;
+
+    btn.disabled = false;
+    btn.style.opacity = "1";
+  };
+
+  imgLoader.src = imageUrl;
 };
 
 window.copyAiImgUrl = function () {
