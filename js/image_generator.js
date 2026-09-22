@@ -1,5 +1,5 @@
 // ==========================================
-// أداة توليد الصور بالذكاء الاصطناعي (Ali-K AI Image Generator - Direct Fix)
+// أداة توليد الصور بالذكاء الاصطناعي (Ali-K AI Image Generator - Final Fix)
 // ==========================================
 
 window.openImageGeneratorService = function () {
@@ -7,7 +7,7 @@ window.openImageGeneratorService = function () {
     <div style="display: flex; flex-direction: column; gap: 14px; padding: 5px; text-align: right;">
       
       <p style="font-size: 0.85rem; color: var(--text-secondary, #94a3b8); margin: 0; text-align: center;">
-        اكتب وصف الصورة باللغة الإنجليزية أو العربية وسيقوم الذكاء الاصطناعي بتوليدها:
+        اكتب وصف الصورة باللغة العربية أو الإنجليزية وسيتم ترجمتها وتوليدها تلقائياً:
       </p>
 
       <!-- حقل إدخال الوصف -->
@@ -16,7 +16,7 @@ window.openImageGeneratorService = function () {
         <textarea 
           id="aiPromptInput" 
           rows="3" 
-          placeholder="مثال: A girl hugs a cat, highly detailed, 8k..."
+          placeholder="مثال: فتاة جميلة لديها قطة..."
           style="
             width: 100%;
             padding: 10px;
@@ -95,7 +95,7 @@ window.openImageGeneratorService = function () {
 
         <!-- أزرار التفاعل -->
         <div style="display: flex; width: 100%; gap: 8px;">
-          <a id="downloadAiImgBtn" href="" target="_blank" download="ai-image.jpg" style="flex: 1; text-align: center; padding: 8px; background: #00ffaa; color: #000; font-weight: bold; border-radius: 6px; text-decoration: none; font-size: 0.8rem;">
+          <a id="downloadAiImgBtn" href="" download="ai-image.jpg" style="flex: 1; text-align: center; padding: 8px; background: #00ffaa; color: #000; font-weight: bold; border-radius: 6px; text-decoration: none; font-size: 0.8rem;">
             <i class="fa-solid fa-download"></i> تحميل الصورة
           </a>
           <button onclick="copyAiImgUrl()" style="flex: 1; padding: 8px; background: #00d9ff; color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
@@ -112,7 +112,21 @@ window.openImageGeneratorService = function () {
   }
 };
 
-window.generateAiImage = function () {
+// دالة سريعة لترجمة النص إلى الإنجليزية إذا كان باللغة العربية
+async function translateToEnglish(text) {
+  const isArabic = /[\u0600-\u06FF]/.test(text);
+  if (!isArabic) return text;
+
+  try {
+    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
+    const data = await res.json();
+    return data[0][0][0] || text;
+  } catch (e) {
+    return text;
+  }
+}
+
+window.generateAiImage = async function () {
   const promptInput = document.getElementById("aiPromptInput");
   const styleSelect = document.getElementById("aiStyleSelect");
   const sizeSelect = document.getElementById("aiSizeSelect");
@@ -122,57 +136,64 @@ window.generateAiImage = function () {
   const downloadBtn = document.getElementById("downloadAiImgBtn");
   const btn = document.getElementById("startGenerateBtn");
 
-  const prompt = promptInput.value.trim();
-  if (!prompt) {
+  const rawPrompt = promptInput.value.trim();
+  if (!rawPrompt) {
     alert("يرجى كتابة وصف للصورة أولاً!");
     return;
   }
 
-  const [width, height] = sizeSelect.value.split("x").map(Number);
-  const style = styleSelect.value;
-  const fullPrompt = style ? `${prompt}, ${style}` : prompt;
-
   status.style.display = "block";
   status.style.color = "#a855f7";
-  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري رسم وتوليد الصورة بالذكاء الاصطناعي...`;
+  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري معالجة الوصف وترجمته...`;
 
   btn.disabled = true;
   btn.style.opacity = "0.6";
   resultContainer.style.display = "none";
 
-  // توليد برقم عشوائي للحصول على نتيجة مختلفة في كل مرة
-  const seed = Math.floor(Math.random() * 1000000);
-  const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${width}&height=${height}&seed=${seed}&nologo=true`;
+  // ترجمة الوصف إلى الإنجليزية لتجنب أخطاء السيرفر
+  const translatedPrompt = await translateToEnglish(rawPrompt);
 
-  // تحميل الصورة وتجهيزها مباشرة
-  const imgLoader = new Image();
-  imgLoader.onload = function () {
-    outputImg.src = imageUrl;
-    downloadBtn.href = imageUrl;
-    
+  const [width, height] = sizeSelect.value.split("x").map(Number);
+  const style = styleSelect.value;
+  const fullPrompt = style ? `${translatedPrompt}, ${style}` : translatedPrompt;
+
+  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري رسم الصورة بالذكاء الاصطناعي...`;
+
+  const seed = Math.floor(Math.random() * 10000000);
+  const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${width}&height=${height}&seed=${seed}&model=flux&nologo=true`;
+
+  try {
+    const response = await fetch(imageUrl);
+    if (!response.ok) throw new Error("فشل الخادم في توليد الصورة");
+
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+
+    outputImg.src = objectUrl;
+    downloadBtn.href = objectUrl;
+
+    // حفظ رابط الصورة الأصلي للنسخ
+    outputImg.dataset.originalUrl = imageUrl;
+
     status.style.color = "#00ffaa";
     status.innerHTML = `✅ تم توليد الصورة بنجاح!`;
     resultContainer.style.display = "flex";
 
-    btn.disabled = false;
-    btn.style.opacity = "1";
-  };
-
-  imgLoader.onerror = function () {
+  } catch (e) {
     status.style.color = "#ff4d4d";
-    status.innerHTML = `❌ تعذر تحميل الصورة، يرجى المحاولة مرة أخرى.`;
-
+    status.innerHTML = `❌ تعذر توليد الصورة، يرجى إعادة المحاولة أو تغيير الوصف.`;
+  } finally {
     btn.disabled = false;
     btn.style.opacity = "1";
-  };
-
-  imgLoader.src = imageUrl;
+  }
 };
 
 window.copyAiImgUrl = function () {
   const outputImg = document.getElementById("aiOutputImg");
-  if (outputImg && outputImg.src) {
-    navigator.clipboard.writeText(outputImg.src);
+  const linkToCopy = outputImg ? (outputImg.dataset.originalUrl || outputImg.src) : "";
+  if (linkToCopy) {
+    navigator.clipboard.writeText(linkToCopy);
     alert("تم نسخ رابط الصورة بنجاح! 📋");
   }
 };
+ 
