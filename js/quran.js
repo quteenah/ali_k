@@ -3,9 +3,8 @@
 // ==========================================
 
 const QURAN_API = "https://api.alquran.cloud/v1";
-
-// رابط الصورة المرفقة لاستخدامها داخل النافذة
-const QURAN_LOGO_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSQA..."; // أو ضع رابط الصورة المحلي/الخارجي هنا
+// مسار الصورة المرفقة
+const QURAN_LOGO_IMG = "images/Quran_kareem_orange_logo.png";
 
 let quranSurahsList = [];
 
@@ -16,7 +15,7 @@ function openQuranService() {
 
   if (!modal || !title || !body) return;
 
-  // عنوان النافذة المنبثقة مع صورة القرآن المرفقة
+  // عنوان النافذة المنبثقة مع الصورة المرفقة
   title.innerHTML = `
     <div style="display: flex; align-items: center; gap: 10px;">
       <img src="${QURAN_LOGO_IMG}" alt="القرآن الكريم" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #00d9ff;">
@@ -222,4 +221,3 @@ function showQuranError(title, message) {
     </div>
   `;
 }
- 
