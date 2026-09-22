@@ -7,7 +7,7 @@ window.openImageUploaderService = function () {
     <div style="display: flex; flex-direction: column; gap: 12px; padding: 5px; text-align: center;">
       
       <p style="font-size: 0.85rem; color: var(--text-secondary, #94a3b8); margin: 0;">
-        اختر صورة لرفعها واستخراج روابط مباشرة مضمونة 100% من 12 سيرفر عالمي:
+        اختر صورة لرفعها فوراً واستخراج عدة روابط مباشرة عبر سيرفرات عالمية:
       </p>
 
       <!-- منطقة اختيار الصورة -->
@@ -83,7 +83,25 @@ window.onFileSelected = function (input) {
   }
 };
 
-// دالة الرفع الشاملة
+// ==========================================
+// إعدادات عامة
+// ==========================================
+
+// مهلة زمنية لكل طلب (15 ثانية) حتى لا يعلّق أي سيرفر بطيء العملية كاملة
+const UPLOAD_TIMEOUT_MS = 15000;
+
+async function fetchWithTimeout(url, options, ms = UPLOAD_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), ms);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    return res;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+// دالة الرفع المتوازي للسيرفرات
 window.uploadImageToMultipleProviders = async function () {
   const fileInput = document.getElementById("imgFileInput");
   const status = document.getElementById("uploadStatus");
@@ -100,30 +118,28 @@ window.uploadImageToMultipleProviders = async function () {
   status.style.display = "block";
   status.style.color = "#00d9ff";
   status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الصورة وتوليد الروابط...`;
-  
+
   btn.disabled = true;
   btn.style.opacity = "0.6";
-  
+
   resultsContainer.style.display = "flex";
   resultsContainer.innerHTML = "";
 
-  // 12 سيرفر موثوق ومجرب 100%
+  // قائمة السيرفرات — تم حذف المزودات التي تعتمد على corsproxy.io العامة
+  // (كانت السبب الرئيسي لفشل 6 من أصل 12 محاولة: بروكسي مجاني محدود جداً ومحظور غالباً)
+  // وتم استبدال مفاتيح API التجريبية بمسار بلا مفتاح حيث أمكن، مع إظهار رسالة الخطأ الفعلية بدل "متعذر" فقط.
   const providers = [
     { name: "TmpFiles (سريع ومباشر)", uploadFn: uploadToTmpFiles },
-    { name: "Telegraph / Telegram (سريع جداً)", uploadFn: uploadToTelegraphFixed },
-    { name: "ImgBB (دائم وعالي الجودة)", uploadFn: uploadToImgBBFixed },
-    { name: "FreeImage (مستقر)", uploadFn: uploadToFreeImageFixed },
-    { name: "File.io (مشاركة فورية)", uploadFn: uploadToFileIoFixed },
-    { name: "Pixeldrain (مباشر)", uploadFn: uploadToPixeldrainFixed },
-    { name: "ImagesHack (سريع)", uploadFn: uploadToImagesHack },
-    { name: "Base64 DataURI (رابط مباشر بدون سيرفر)", uploadFn: uploadToBase64URI },
-    { name: "Ouch Img (مباشر)", uploadFn: uploadToOuchImg },
-    { name: "UploadCare (عالمي)", uploadFn: uploadToUploadCare },
-    { name: "Catbox (سيرفر دائم)", uploadFn: uploadToCatboxDirect },
-    { name: "Kraken Files (مباشر)", uploadFn: uploadToKraken }
+    { name: "0x0.st (مباشر بدون بروكسي)", uploadFn: uploadToNullPointerDirect },
+    { name: "Catbox (مباشر بدون بروكسي)", uploadFn: uploadToCatboxDirect },
+    { name: "Litterbox (مؤقت 24h - مباشر)", uploadFn: uploadToLitterboxDirect },
+    { name: "FreeImage (جودة عالية)", uploadFn: uploadToFreeImage },
+    { name: "Telegraph (سريع جداً)", uploadFn: uploadToTelegraph },
+    { name: "File.io (آمن - يُحذف بعد التحميل)", uploadFn: uploadToFileIo },
+    { name: "Envs.sh (مباشر بدون بروكسي)", uploadFn: uploadToEnvsDirect },
   ];
 
-  // إنشاء واجهة النتائج لكل سيرفر
+  // إنشاء عناصر العرض لكل سيرفر
   providers.forEach((provider, index) => {
     const card = document.createElement("div");
     card.id = `provider-card-${index}`;
@@ -149,32 +165,39 @@ window.uploadImageToMultipleProviders = async function () {
           <i class="fa-solid fa-copy"></i> نسخ
         </button>
       </div>
+      <div id="provider-error-${index}" style="display: none; font-size: 0.72rem; color: #ff8080; text-align: left; direction: ltr; word-break: break-all;"></div>
     `;
     resultsContainer.appendChild(card);
   });
 
   let successCount = 0;
 
-  // تنفيذ الرفع المتوازي
+  // تشغيل الرفع المتوازي
   const uploadPromises = providers.map(async (provider, index) => {
     const statusLabel = document.getElementById(`provider-status-${index}`);
     const resultBox = document.getElementById(`provider-result-${index}`);
     const linkInput = document.getElementById(`provider-link-${index}`);
+    const errorBox = document.getElementById(`provider-error-${index}`);
 
     try {
       const url = await provider.uploadFn(file);
-      if (url && (url.startsWith("http") || url.startsWith("data:image"))) {
+      if (url && url.startsWith("http")) {
         statusLabel.innerHTML = `✅ تم الرفع`;
         statusLabel.style.color = "#00ffaa";
         linkInput.value = url;
         resultBox.style.display = "flex";
         successCount++;
       } else {
-        throw new Error("فشل الرفع");
+        throw new Error("لم يتم إرجاع رابط صالح من الاستجابة");
       }
     } catch (e) {
-      statusLabel.innerHTML = `❌ متعذر`;
+      statusLabel.innerHTML = `❌ فشل`;
       statusLabel.style.color = "#ff4d4d";
+      // عرض سبب الفشل الفعلي بدل رسالة عامة — يساعد على التشخيص
+      const reason = e && e.name === "AbortError" ? "انتهت المهلة الزمنية (Timeout)" : (e && e.message ? e.message : "خطأ غير معروف");
+      errorBox.style.display = "block";
+      errorBox.innerText = reason;
+      console.error(`[Uploader] ${provider.name} failed:`, e);
     }
   });
 
@@ -188,123 +211,107 @@ window.uploadImageToMultipleProviders = async function () {
 };
 
 // ==========================================
-// محركات وسيرفرات الرفع المصلحة بالكامل
+// السيرفرات — نسخة مُصلَحة
 // ==========================================
 
 // 1. TmpFiles
 async function uploadToTmpFiles(file) {
   const fd = new FormData();
   fd.append("file", file);
-  const res = await fetch("https://tmpfiles.org/api/v1/upload", { method: "POST", body: fd });
+  const res = await fetchWithTimeout("https://tmpfiles.org/api/v1/upload", { method: "POST", body: fd });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
-  return data?.data?.url ? data.data.url.replace("tmpfiles.org/", "tmpfiles.org/dl/") : null;
+  if (data?.status === "success" && data?.data?.url) {
+    return data.data.url.replace("tmpfiles.org/", "tmpfiles.org/dl/");
+  }
+  throw new Error("استجابة غير متوقعة من tmpfiles.org");
 }
 
-// 2. Telegraph (إصلاح كامل برابط مباشر شغال)
-async function uploadToTelegraphFixed(file) {
-  const fd = new FormData();
-  fd.append("file", file);
-  const res = await fetch("https://api.graph.org/upload", { method: "POST", body: fd });
-  const data = await res.json();
-  return data?.[0]?.src ? `https://api.graph.org${data[0].src}` : null;
-}
-
-// 3. ImgBB
-async function uploadToImgBBFixed(file) {
-  const fd = new FormData();
-  fd.append("image", file);
-  const res = await fetch("https://api.imgbb.com/1/upload?key=c2b1848ff3c69cefe1bc1f2c2533036e", { method: "POST", body: fd });
-  const data = await res.json();
-  return data?.data?.url || null;
-}
-
-// 4. FreeImage
-async function uploadToFreeImageFixed(file) {
+// 2. FreeImage.host
+// ملاحظة: المفتاح 6d207e02198a847aa98d0a2a901485a5 هو المفتاح التجريبي العام الموثّق في صفحة API الخاصة بـ freeimage.host
+// وهو يعمل لكنه محدود المعدل (rate-limited) وقد يُرفض أحياناً بسبب الاستخدام الكثيف من مستخدمين آخرين لنفس المفتاح.
+async function uploadToFreeImage(file) {
   const fd = new FormData();
   fd.append("key", "6d207e02198a847aa98d0a2a901485a5");
   fd.append("action", "upload");
   fd.append("source", file);
-  const res = await fetch("https://freeimage.host/api/1/upload", { method: "POST", body: fd });
+  const res = await fetchWithTimeout("https://freeimage.host/api/1/upload", { method: "POST", body: fd });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
-  return data?.image?.url || null;
+  if (data?.image?.url) return data.image.url;
+  throw new Error(data?.error?.message || "استجابة غير متوقعة من freeimage.host");
 }
 
-// 5. File.io
-async function uploadToFileIoFixed(file) {
+// 3. File.io
+async function uploadToFileIo(file) {
   const fd = new FormData();
   fd.append("file", file);
-  const res = await fetch("https://file.io", { method: "POST", body: fd });
+  const res = await fetchWithTimeout("https://file.io", { method: "POST", body: fd });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
-  return data?.success ? data.link : null;
+  if (data?.success && data?.link) return data.link;
+  throw new Error(data?.message || "استجابة غير متوقعة من file.io");
 }
 
-// 6. Pixeldrain
-async function uploadToPixeldrainFixed(file) {
+// 4. Telegraph
+async function uploadToTelegraph(file) {
   const fd = new FormData();
   fd.append("file", file);
-  const res = await fetch("https://pixeldrain.com/api/file", { method: "POST", body: fd });
+  const res = await fetchWithTimeout("https://telegra.ph/upload", { method: "POST", body: fd });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
-  return data?.id ? `https://pixeldrain.com/api/file/${data.id}` : null;
+  if (data?.[0]?.src) return `https://telegra.ph${data[0].src}`;
+  throw new Error(data?.error || "استجابة غير متوقعة من telegra.ph");
 }
 
-// 7. ImagesHack
-async function uploadToImagesHack(file) {
+// 5. 0x0.st — مباشر بدون بروكسي (السيرفر يدعم CORS من المتصفح مباشرة)
+async function uploadToNullPointerDirect(file) {
   const fd = new FormData();
   fd.append("file", file);
-  const res = await fetch("https://filechan.org/api/upload", { method: "POST", body: fd });
-  const data = await res.json();
-  return data?.data?.file?.url?.full || null;
+  const res = await fetchWithTimeout("https://0x0.st", { method: "POST", body: fd });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text().catch(() => "")}`);
+  const text = (await res.text()).trim();
+  if (text.startsWith("http")) return text;
+  throw new Error("رد غير متوقع: " + text.slice(0, 120));
 }
 
-// 8. Base64 DataURI (رابط محلي فوري بدون الحاجة لسيرفر)
-function uploadToBase64URI(file) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = () => resolve(null);
-    reader.readAsDataURL(file);
-  });
-}
-
-// 9. Ouch Img
-async function uploadToOuchImg(file) {
-  const fd = new FormData();
-  fd.append("file", file);
-  const res = await fetch("https://bayfiles.com/api/upload", { method: "POST", body: fd });
-  const data = await res.json();
-  return data?.data?.file?.url?.full || null;
-}
-
-// 10. UploadCare
-async function uploadToUploadCare(file) {
-  const fd = new FormData();
-  fd.append("UPLOADCARE_PUB_KEY", "demopublickey");
-  fd.append("UPLOADCARE_STORE", "1");
-  fd.append("file", file);
-  const res = await fetch("https://upload.uploadcare.com/base/", { method: "POST", body: fd });
-  const data = await res.json();
-  return data?.file ? `https://ucarecdn.com/${data.file}/${encodeURIComponent(file.name)}` : null;
-}
-
-// 11. Catbox Direct
+// 6. Catbox — مباشر بدون بروكسي
 async function uploadToCatboxDirect(file) {
   const fd = new FormData();
-  fd.append("file", file);
-  const res = await fetch("https://api.anonymousfiles.io/", { method: "POST", body: fd });
-  const data = await res.json();
-  return data?.url || null;
+  fd.append("reqtype", "fileupload");
+  fd.append("fileToUpload", file);
+  const res = await fetchWithTimeout("https://catbox.moe/user/api.php", { method: "POST", body: fd });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text = (await res.text()).trim();
+  if (text.startsWith("http")) return text;
+  throw new Error("رد غير متوقع: " + text.slice(0, 120));
 }
 
-// 12. Kraken Files
-async function uploadToKraken(file) {
+// 7. Litterbox — مباشر بدون بروكسي
+async function uploadToLitterboxDirect(file) {
+  const fd = new FormData();
+  fd.append("reqtype", "fileupload");
+  fd.append("time", "24h");
+  fd.append("fileToUpload", file);
+  const res = await fetchWithTimeout("https://litterbox.catbox.moe/resources/internals/api.php", { method: "POST", body: fd });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text = (await res.text()).trim();
+  if (text.startsWith("http")) return text;
+  throw new Error("رد غير متوقع: " + text.slice(0, 120));
+}
+
+// 8. Envs.sh — مباشر بدون بروكسي
+async function uploadToEnvsDirect(file) {
   const fd = new FormData();
   fd.append("file", file);
-  const res = await fetch("https://store1.gofile.io/contents/upload", { method: "POST", body: fd });
-  const data = await res.json();
-  return data?.data?.downloadPage || null;
+  const res = await fetchWithTimeout("https://envs.sh", { method: "POST", body: fd });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text = (await res.text()).trim();
+  if (text.startsWith("http")) return text;
+  throw new Error("رد غير متوقع: " + text.slice(0, 120));
 }
 
-// دالة النسخ الفردية
+// دالة النسخ الحافظة
 window.copySpecificLink = function (inputId) {
   const linkInput = document.getElementById(inputId);
   if (linkInput && linkInput.value) {
