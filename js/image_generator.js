@@ -1,5 +1,5 @@
 // ==========================================
-// أداة توليد الصور بالذكاء الاصطناعي (Ali-K AI Image Generator - Final Fix)
+// أداة توليد الصور بالذكاء الاصطناعي - عرض الصورة المباشر
 // ==========================================
 
 window.openImageGeneratorService = function () {
@@ -7,7 +7,7 @@ window.openImageGeneratorService = function () {
     <div style="display: flex; flex-direction: column; gap: 14px; padding: 5px; text-align: right;">
       
       <p style="font-size: 0.85rem; color: var(--text-secondary, #94a3b8); margin: 0; text-align: center;">
-        اكتب وصف الصورة باللغة العربية أو الإنجليزية وسيتم ترجمتها وتوليدها تلقائياً:
+        اكتب وصف الصورة باللغة العربية أو الإنجليزية وسيتم رسمها وعرضها فوراً:
       </p>
 
       <!-- حقل إدخال الوصف -->
@@ -87,20 +87,18 @@ window.openImageGeneratorService = function () {
       <!-- حالة المعالجة -->
       <div id="aiStatus" style="display: none; font-size: 0.85rem; padding: 6px; text-align: center;"></div>
 
-      <!-- معاينة الصورة الناتجة -->
+      <!-- حاوية عرض الصورة الناتجة بشكل مرئي -->
       <div id="aiResultContainer" style="display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 8px;">
-        <div style="position: relative; width: 100%; max-height: 350px; overflow: hidden; border-radius: 10px; border: 1px solid #1e293b; background: #000; display: flex; justify-content: center; align-items: center;">
-          <img id="aiOutputImg" src="" alt="AI Output" style="max-width: 100%; max-height: 350px; object-fit: contain;" />
+        <div style="position: relative; width: 100%; min-height: 250px; max-height: 380px; border-radius: 10px; border: 1px solid #1e293b; background: #000; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+          <!-- عنصر الصورة المرئي -->
+          <img id="aiOutputImg" src="" alt="الصورة المولدة" style="width: 100%; height: 100%; object-fit: contain; border-radius: 10px;" />
         </div>
 
-        <!-- أزرار التفاعل -->
+        <!-- أزرار حفظ وتحميل الصورة -->
         <div style="display: flex; width: 100%; gap: 8px;">
-          <a id="downloadAiImgBtn" href="" download="ai-image.jpg" style="flex: 1; text-align: center; padding: 8px; background: #00ffaa; color: #000; font-weight: bold; border-radius: 6px; text-decoration: none; font-size: 0.8rem;">
+          <a id="downloadAiImgBtn" href="#" download="ai-generated-image.jpg" target="_blank" style="flex: 1; text-align: center; padding: 10px; background: #00ffaa; color: #000; font-weight: bold; border-radius: 6px; text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
             <i class="fa-solid fa-download"></i> تحميل الصورة
           </a>
-          <button onclick="copyAiImgUrl()" style="flex: 1; padding: 8px; background: #00d9ff; color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
-            <i class="fa-solid fa-copy"></i> نسخ الرابط
-          </button>
         </div>
       </div>
 
@@ -112,20 +110,6 @@ window.openImageGeneratorService = function () {
   }
 };
 
-// دالة سريعة لترجمة النص إلى الإنجليزية إذا كان باللغة العربية
-async function translateToEnglish(text) {
-  const isArabic = /[\u0600-\u06FF]/.test(text);
-  if (!isArabic) return text;
-
-  try {
-    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
-    const data = await res.json();
-    return data[0][0][0] || text;
-  } catch (e) {
-    return text;
-  }
-}
-
 window.generateAiImage = async function () {
   const promptInput = document.getElementById("aiPromptInput");
   const styleSelect = document.getElementById("aiStyleSelect");
@@ -136,44 +120,39 @@ window.generateAiImage = async function () {
   const downloadBtn = document.getElementById("downloadAiImgBtn");
   const btn = document.getElementById("startGenerateBtn");
 
-  const rawPrompt = promptInput.value.trim();
-  if (!rawPrompt) {
+  const prompt = promptInput.value.trim();
+  if (!prompt) {
     alert("يرجى كتابة وصف للصورة أولاً!");
     return;
   }
 
+  const [width, height] = sizeSelect.value.split("x").map(Number);
+  const style = styleSelect.value;
+
   status.style.display = "block";
   status.style.color = "#a855f7";
-  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري معالجة الوصف وترجمته...`;
+  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري رسم الصورة بالذكاء الاصطناعي...`;
 
   btn.disabled = true;
   btn.style.opacity = "0.6";
   resultContainer.style.display = "none";
 
-  // ترجمة الوصف إلى الإنجليزية لتجنب أخطاء السيرفر
-  const translatedPrompt = await translateToEnglish(rawPrompt);
-
-  const [width, height] = sizeSelect.value.split("x").map(Number);
-  const style = styleSelect.value;
-  const fullPrompt = style ? `${translatedPrompt}, ${style}` : translatedPrompt;
-
-  status.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري رسم الصورة بالذكاء الاصطناعي...`;
-
-  const seed = Math.floor(Math.random() * 10000000);
-  const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${width}&height=${height}&seed=${seed}&model=flux&nologo=true`;
-
   try {
-    const response = await fetch(imageUrl);
-    if (!response.ok) throw new Error("فشل الخادم في توليد الصورة");
+    const res = await fetch("/api/generate-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, style, width, height })
+    });
 
-    const blob = await response.blob();
-    const objectUrl = URL.createObjectURL(blob);
+    const data = await res.json();
 
-    outputImg.src = objectUrl;
-    downloadBtn.href = objectUrl;
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "تعذر معالجة الطلب");
+    }
 
-    // حفظ رابط الصورة الأصلي للنسخ
-    outputImg.dataset.originalUrl = imageUrl;
+    // إسناد قيمة الصورة المولدة كـ Data URL أو رابط مباشر لتعرض فوراً داخل عنصر img
+    outputImg.src = data.imageUrl;
+    downloadBtn.href = data.imageUrl;
 
     status.style.color = "#00ffaa";
     status.innerHTML = `✅ تم توليد الصورة بنجاح!`;
@@ -181,19 +160,10 @@ window.generateAiImage = async function () {
 
   } catch (e) {
     status.style.color = "#ff4d4d";
-    status.innerHTML = `❌ تعذر توليد الصورة، يرجى إعادة المحاولة أو تغيير الوصف.`;
+    status.innerHTML = `❌ ${e.message}`;
   } finally {
     btn.disabled = false;
     btn.style.opacity = "1";
-  }
-};
-
-window.copyAiImgUrl = function () {
-  const outputImg = document.getElementById("aiOutputImg");
-  const linkToCopy = outputImg ? (outputImg.dataset.originalUrl || outputImg.src) : "";
-  if (linkToCopy) {
-    navigator.clipboard.writeText(linkToCopy);
-    alert("تم نسخ رابط الصورة بنجاح! 📋");
   }
 };
  
