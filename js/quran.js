@@ -3,7 +3,9 @@
 // ==========================================
 
 const QURAN_API = "https://api.alquran.cloud/v1";
-const QURAN_ICON_URL = "https://i.ibb.co/68v8L54/quran-icon.png"; // تم تضمين صورة القرآن الكريم
+
+// رابط الصورة المرفقة لاستخدامها داخل النافذة
+const QURAN_LOGO_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSQA..."; // أو ضع رابط الصورة المحلي/الخارجي هنا
 
 let quranSurahsList = [];
 
@@ -14,10 +16,10 @@ function openQuranService() {
 
   if (!modal || !title || !body) return;
 
-  // عنوان النافذة المنبثقة مع صورة القرآن
+  // عنوان النافذة المنبثقة مع صورة القرآن المرفقة
   title.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <img src="${QURAN_ICON_URL}" alt="القرآن الكريم" style="width: 26px; height: 26px; border-radius: 50%; object-fit: cover;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <img src="${QURAN_LOGO_IMG}" alt="القرآن الكريم" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #00d9ff;">
       <span>القرآن الكريم</span>
     </div>
   `;
@@ -144,7 +146,9 @@ function renderSurahContent(surah) {
       <button onclick="backToSurahsList()" style="background: #1e293b; color: #00d9ff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold;">
         ← قائمة السور
       </button>
-      <h3 style="margin: 0; color: #fff;">سورة ${surah.name}</h3>
+      <h3 style="margin: 0; color: #fff; display: flex; align-items: center; gap: 6px;">
+        سورة ${surah.name}
+      </h3>
     </div>
   `;
 
