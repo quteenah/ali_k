@@ -116,7 +116,7 @@
         </div>
 
         <!-- أداة مشغل IPTV المباشر -->
-        <div class="tool-card" onclick="openIptvService()">
+        <div class="tool-card" id="iptvToolCard" onclick="if(typeof openIptvService === 'function') openIptvService();">
           <div class="card-icon"><i class="fa-solid fa-tv" style="color: #3b82f6;"></i></div>
           <div class="card-content">
             <h3>مشغل IPTV المباشر</h3>
