@@ -1,5 +1,5 @@
 // ==========================================
-// مشغل IPTV المتقدم والسريع (Ali-K IPTV Live)
+// مشغل IPTV المتقدم والسريع جداً (Ali-K IPTV Live)
 // ==========================================
 
 function openIptvService() {
@@ -46,10 +46,10 @@ function openIptvService() {
     <div class="bg-[#0b0f19] text-gray-100 flex flex-col h-[78vh] overflow-hidden rounded-xl border border-[#232d42]" style="direction: rtl;">
 
       <!-- Header -->
-      <header class="bg-[#151c2c] border-b border-[#232d42] px-3 py-2 flex items-center justify-between shrink-0 z-20">
+      <header class="bg-[#151c2c] border-b border-[#232d42] px-3 py-2 flex items-center justify-between shrink-0 z-30">
         <div class="flex items-center gap-2">
-          <!-- زر إظهار وإخفاء القائمة الجانبية الواضح -->
-          <button id="iptvToggleSidebar" class="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition flex items-center gap-1 shadow">
+          <!-- زر القائمة الجانبية (مفعل للفتح والإغلاق بسلاسة) -->
+          <button id="iptvToggleSidebar" class="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow">
             <i class="fa-solid fa-bars"></i> القائمة
           </button>
           <div class="flex items-center gap-1.5">
@@ -72,8 +72,8 @@ function openIptvService() {
 
       <div class="flex flex-1 overflow-hidden relative">
 
-        <!-- Sidebar Navigation (تعديل الـ z-index والتحكم بالإخفاء والإظهار) -->
-        <aside id="iptvSidebar" class="absolute md:relative inset-y-0 right-0 z-40 w-72 bg-[#151c2c] border-l border-[#232d42] flex flex-col shrink-0 overflow-y-auto transition-transform duration-300 shadow-2xl md:shadow-none">
+        <!-- Sidebar Navigation (تم ضبطها لتكون مخفية افتراضياً بـ translate-x-full وتظهر عند الضغط) -->
+        <aside id="iptvSidebar" class="absolute md:relative inset-y-0 right-0 z-30 w-72 bg-[#151c2c] border-l border-[#232d42] flex flex-col shrink-0 overflow-y-auto transition-transform duration-300 transform translate-x-full shadow-2xl">
           <div class="p-3 border-b border-[#232d42] space-y-2">
             <div class="relative">
               <i class="fa-solid fa-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
@@ -114,18 +114,20 @@ function openIptvService() {
           </div>
         </aside>
 
-        <!-- Main Area -->
-        <main class="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#0b0f19] relative z-10">
-          <section class="w-full md:w-[60%] lg:w-[65%] flex flex-col justify-center relative border-b md:border-b-0 md:border-l border-[#232d42] shrink-0">
+        <!-- Main Area (Player & Grid) -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-[#0b0f19] relative z-10">
+          
+          <!-- مشغل الفيديو العلوي -->
+          <section class="w-full bg-black flex flex-col justify-center relative border-b border-[#232d42] shrink-0">
             <div class="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden">
               <video id="iptvVideoPlayer" class="w-full h-full object-contain" controls crossorigin="anonymous"></video>
 
               <div id="iptvPlayerPlaceholder" class="absolute inset-0 bg-slate-950 flex flex-col items-center justify-center p-4 text-center z-10">
-                <div class="w-12 h-12 rounded-xl bg-brand-600/25 border border-brand-500/30 flex items-center justify-center text-brand-500 mb-3">
-                  <i class="fa-solid fa-play text-xl"></i>
+                <div class="w-12 h-12 rounded-xl bg-brand-600/25 border border-brand-500/30 flex items-center justify-center text-brand-500 mb-2">
+                  <i class="fa-solid fa-play text-lg"></i>
                 </div>
                 <h3 class="text-sm font-bold text-white mb-1">اختر قناة للبدء بالتشغيل</h3>
-                <p class="text-[11px] text-gray-400">اضغط على زر "القائمة" بالأعلى لاختيار قناة.</p>
+                <p class="text-[11px] text-gray-400">اضغط على زر "القائمة" بالأعلى لعرض القنوات واختيار ما تحب.</p>
               </div>
 
               <div id="iptvVideoLoader" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center z-10">
@@ -146,9 +148,9 @@ function openIptvService() {
               </div>
             </div>
 
-            <div class="p-3 bg-[#151c2c] border-t border-[#232d42] flex items-center justify-between">
-              <div class="flex items-center gap-2.5 overflow-hidden">
-                <img id="iptvActiveLogo" src="https://via.placeholder.com/40?text=TV" alt="logo" class="w-9 h-9 rounded-lg object-contain bg-slate-900 border border-[#232d42] p-0.5 shrink-0" onerror="this.src='https://via.placeholder.com/40?text=TV'">
+            <div class="p-2.5 bg-[#151c2c] border-t border-[#232d42] flex items-center justify-between">
+              <div class="flex items-center gap-2 overflow-hidden">
+                <img id="iptvActiveLogo" src="https://via.placeholder.com/40?text=TV" alt="logo" class="w-8 h-8 rounded-lg object-contain bg-slate-900 border border-[#232d42] p-0.5 shrink-0" onerror="this.src='https://via.placeholder.com/40?text=TV'">
                 <div class="truncate">
                   <h2 id="iptvActiveTitle" class="font-bold text-xs text-white truncate">لم يتم اختيار قناة</h2>
                   <div class="flex items-center gap-1.5 mt-0.5">
@@ -163,11 +165,11 @@ function openIptvService() {
             </div>
           </section>
 
-          <!-- Channels Section (مع منع التعليق عبر تقنية الـ Lazy Rendering) -->
+          <!-- قائمة القنوات السريعة (تحديث الدفعات لمنع أي تعليق) -->
           <section class="flex-1 flex flex-col bg-[#0b0f19] overflow-hidden">
-            <div class="p-2.5 bg-[#151c2c]/50 border-b border-[#232d42] flex items-center justify-between shrink-0">
+            <div class="p-2 bg-[#151c2c]/50 border-b border-[#232d42] flex items-center justify-between shrink-0">
               <span class="text-[11px] font-bold text-gray-300 flex items-center gap-1">
-                <i class="fa-solid fa-list-ul text-brand-500"></i> قائمة القنوات (سريعة)
+                <i class="fa-solid fa-list-ul text-brand-500"></i> القنوات المتاحة
               </span>
               <span id="iptvVisibleCountText" class="text-[11px] text-gray-400">عرض 0 قناة</span>
             </div>
@@ -180,6 +182,7 @@ function openIptvService() {
             </div>
           </section>
         </main>
+
       </div>
     </div>
   `;
@@ -250,7 +253,7 @@ function initIptvPlayerLogic() {
   loadPlaylistData();
 
   function setupEvents() {
-    // تفعيل زر إخفاء وإظهار القائمة الجانبية بشكل فوري
+    // تفعيل زر القائمة لإخفاء وإظهار القائمة الجانبية بسلاسة تامة بدون تعليق
     if (toggleSidebar && sidebar) {
       toggleSidebar.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -264,7 +267,6 @@ function initIptvPlayerLogic() {
       if (currentChannel) playChannel(currentChannel);
     });
 
-    // استخدام Debounce للبحث لمنع التعليق أثناء الكتابة
     let searchTimeout;
     searchInput.addEventListener('input', () => {
       clearTimeout(searchTimeout);
@@ -408,7 +410,7 @@ function initIptvPlayerLogic() {
       return matchSearch && matchCat && matchCnt && matchFav;
     });
 
-    // عرض أول 150 قناة فقط كدفعة أولي لمنع تعليق المتصفح نهائياً
+    // عرض أول 150 قناة فقط كدفعة أولي لتسريع الاستجابة نهائياً ومنع أي تعليق
     renderGrid(filteredChannels.slice(0, 150));
     visibleCountText.textContent = `عرض ${filteredChannels.length} قناة`;
   }
