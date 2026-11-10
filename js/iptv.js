@@ -44,7 +44,7 @@ function openIptvService() {
     document.head.appendChild(hlsScript);
   }
 
-  // بناء واجهة IPTV داخل جسم النافذة المنبثقة مع زر إظهار/إخفاء القائمة
+  // بناء واجهة IPTV داخل جسم النافذة المنبثقة
   body.innerHTML = `
     <div class="bg-[#0b0f19] text-gray-100 flex flex-col h-[78vh] overflow-hidden rounded-xl border border-[#232d42]" style="direction: rtl;">
 
@@ -72,7 +72,7 @@ function openIptvService() {
             <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
             <span id="iptvStatusText">جاري التحميل...</span>
           </div>
-          <button id="iptvReloadBtn" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-gray-300 transition text-xs" title="إعادة تحميل قائمة القنوات">
+          <button id="iptvReloadBtn" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-gray-300 transition text-xs" title="إعادة تحميل القنوات">
             <i class="fa-solid fa-rotate text-xs"></i>
           </button>
         </div>
@@ -80,23 +80,20 @@ function openIptvService() {
 
       <div class="flex flex-1 overflow-hidden relative">
 
-        <!-- Sidebar Navigation & Filters (مخفية افتراضياً على الهواتف وقابلة للتبديل) -->
+        <!-- Sidebar Navigation & Filters -->
         <aside id="iptvSidebar" class="absolute md:relative inset-y-0 right-0 z-30 w-64 bg-[#151c2c] border-l border-[#232d42] flex flex-col shrink-0 overflow-y-auto transition-transform duration-300">
-          <!-- Search & Quick Actions -->
           <div class="p-3 border-b border-[#232d42] space-y-2.5">
             <div class="relative">
               <i class="fa-solid fa-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
               <input type="text" id="iptvSearchInput" placeholder="ابحث عن قناة..." class="w-full bg-[#0b0f19] border border-[#232d42] focus:border-brand-500 rounded-lg py-1.5 pr-8 pl-3 text-xs text-gray-200 placeholder-gray-500 focus:outline-none transition">
             </div>
 
-            <!-- Tabs: All / Favorites -->
             <div class="grid grid-cols-2 gap-1 bg-[#0b0f19] p-1 rounded-lg border border-[#232d42]">
               <button id="iptvTabAll" class="py-1 text-[11px] font-semibold rounded bg-brand-600 text-white transition">الكل (<span id="iptvCountAll">0</span>)</button>
               <button id="iptvTabFavs" class="py-1 text-[11px] font-semibold rounded text-gray-400 hover:text-white transition">المفضلة (<span id="iptvCountFavs">0</span>)</button>
             </div>
           </div>
 
-          <!-- Category & Country Filters -->
           <div class="p-3 border-b border-[#232d42] space-y-2.5">
             <div>
               <label class="text-[10px] font-semibold text-gray-400 block mb-1">التصنيف</label>
@@ -112,7 +109,6 @@ function openIptvService() {
             </div>
           </div>
 
-          <!-- CORS Proxy Override Settings -->
           <div class="p-3 border-b border-[#232d42] bg-slate-900/40">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[11px] font-semibold text-gray-300">خادم Proxy للبث</span>
@@ -124,7 +120,6 @@ function openIptvService() {
             <p class="text-[10px] text-gray-400">تفعيل البروكسي عند مشاكل الحظر أو CORS.</p>
           </div>
 
-          <!-- Stats Footer in Sidebar -->
           <div class="p-2.5 mt-auto text-center border-t border-[#232d42]">
             <p class="text-[11px] text-gray-500">إجمالي القنوات: <span id="iptvTotalChannelsCount" class="text-gray-300 font-bold">0</span></p>
           </div>
@@ -132,15 +127,10 @@ function openIptvService() {
 
         <!-- Main Area -->
         <main class="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#0b0f19]">
-          
-          <!-- Video Player Section -->
           <section class="w-full md:w-[60%] lg:w-[65%] flex flex-col justify-center relative border-b md:border-b-0 md:border-l border-[#232d42] shrink-0">
-            <!-- Video Container -->
             <div class="relative w-full aspect-video bg-black flex items-center justify-center group overflow-hidden">
-              
               <video id="iptvVideoPlayer" class="w-full h-full object-contain" controls crossorigin="anonymous"></video>
 
-              <!-- Player Placeholder Overlay -->
               <div id="iptvPlayerPlaceholder" class="absolute inset-0 bg-slate-950 flex flex-col items-center justify-center p-4 text-center z-10">
                 <div class="w-12 h-12 rounded-xl bg-brand-600/25 border border-brand-500/30 flex items-center justify-center text-brand-500 mb-3">
                   <i class="fa-solid fa-play text-xl"></i>
@@ -149,13 +139,11 @@ function openIptvService() {
                 <p class="text-[11px] text-gray-400 max-w-xs">اضغط على زر القائمة (☰) بالأعلى لاختيار قناة.</p>
               </div>
 
-              <!-- Video Loader Overlay -->
               <div id="iptvVideoLoader" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center z-10">
                 <div class="w-10 h-10 border-3 border-brand-600 border-t-transparent rounded-full animate-spin mb-2"></div>
                 <p class="text-xs text-gray-200 font-semibold" id="iptvLoaderText">جاري الاتصال بالبث...</p>
               </div>
 
-              <!-- Error Alert Overlay -->
               <div id="iptvVideoError" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center z-10">
                 <div class="w-10 h-10 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center mb-2">
                   <i class="fa-solid fa-triangle-exclamation text-lg"></i>
@@ -169,7 +157,6 @@ function openIptvService() {
               </div>
             </div>
 
-            <!-- Active Channel Info Bar -->
             <div class="p-3 bg-[#151c2c] border-t border-[#232d42] flex items-center justify-between">
               <div class="flex items-center gap-2.5 overflow-hidden">
                 <img id="iptvActiveLogo" src="https://via.placeholder.com/40?text=TV" alt="logo" class="w-9 h-9 rounded-lg object-contain bg-slate-900 border border-[#232d42] p-0.5 shrink-0" onerror="this.src='https://via.placeholder.com/40?text=TV'">
@@ -187,9 +174,7 @@ function openIptvService() {
             </div>
           </section>
 
-          <!-- Channels Grid Container -->
           <section class="flex-1 flex flex-col bg-[#0b0f19] overflow-hidden">
-            <!-- Channel Section Bar -->
             <div class="p-2.5 bg-[#151c2c]/50 border-b border-[#232d42] flex items-center justify-between shrink-0">
               <span class="text-[11px] font-bold text-gray-300 flex items-center gap-1">
                 <i class="fa-solid fa-list-ul text-brand-500"></i> قائمة القنوات
@@ -197,7 +182,6 @@ function openIptvService() {
               <span id="iptvVisibleCountText" class="text-[11px] text-gray-400">عرض 0 قناة</span>
             </div>
 
-            <!-- Channels Scrollable Grid -->
             <div id="iptvChannelsContainer" class="flex-1 overflow-y-auto p-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div class="col-span-full py-12 flex flex-col items-center justify-center text-center">
                 <div class="w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full animate-spin mb-2"></div>
@@ -205,7 +189,6 @@ function openIptvService() {
               </div>
             </div>
           </section>
-
         </main>
       </div>
     </div>
@@ -218,8 +201,21 @@ function openIptvService() {
   }, 100);
 }
 
+// ضمان إتاحة الدالة عالمياً
 window.openIptvService = openIptvService;
 
+// ربط الزر تلقائياً فور تحميل المستند لتجاوز أي تعارض مع app.js
+document.addEventListener("DOMContentLoaded", () => {
+  const card = document.getElementById("iptvToolCard");
+  if (card) {
+    card.addEventListener("click", (e) => {
+      e.preventDefault();
+      openIptvService();
+    });
+  }
+});
+
+// منطق تشغيل المشغل الداخلي
 function initIptvPlayerLogic() {
   let allChannels = [];
   let filteredChannels = [];
@@ -273,7 +269,6 @@ function initIptvPlayerLogic() {
   loadPlaylistData();
 
   function setupEvents() {
-    // تفعيل زر طي وإظهار القائمة الجانبية
     if (toggleSidebar && sidebar) {
       toggleSidebar.addEventListener('click', () => {
         sidebar.classList.toggle('translate-x-full');
@@ -477,7 +472,6 @@ function initIptvPlayerLogic() {
     filterAndRender();
     playChannel(channel);
 
-    // إخفاء القائمة تلقائياً عند اختيار قناة على الشاشات الصغيرة
     if (window.innerWidth < 768 && sidebar) {
       sidebar.classList.add('translate-x-full');
     }
@@ -548,4 +542,42 @@ function initIptvPlayerLogic() {
   }
 
   function switchTab(tab) {
-    
+    activeTab = tab;
+    if (tab === 'all') {
+      tabAll.className = 'py-1 text-[11px] font-semibold rounded bg-brand-600 text-white transition';
+      tabFavs.className = 'py-1 text-[11px] font-semibold rounded text-gray-400 hover:text-white transition';
+    } else {
+      tabFavs.className = 'py-1 text-[11px] font-semibold rounded bg-brand-600 text-white transition';
+      tabAll.className = 'py-1 text-[11px] font-semibold rounded text-gray-400 hover:text-white transition';
+    }
+    filterAndRender();
+  }
+
+  function updateGlobalCounts() {
+    countAll.textContent = allChannels.length;
+    countFavs.textContent = favoriteIds.length;
+    totalChannelsCount.textContent = allChannels.length;
+  }
+
+  function updateFavUI() {
+    if (!currentChannel) return;
+    const isFav = favoriteIds.includes(currentChannel.id);
+    favCurrentBtn.innerHTML = `<i class="${isFav ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star'} text-sm"></i>`;
+  }
+
+  function updateStatus(text, color) {
+    statusText.textContent = text;
+    if (color === 'emerald') {
+      statusBadge.className = 'flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+    } else if (color === 'red') {
+      statusBadge.className = 'flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20';
+    } else {
+      statusBadge.className = 'flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20';
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+}
+ 
