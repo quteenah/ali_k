@@ -48,7 +48,7 @@ function openIptvService() {
       <!-- Header -->
       <header class="bg-[#151c2c] border-b border-[#232d42] px-3 py-2 flex items-center justify-between shrink-0 z-30">
         <div class="flex items-center gap-2">
-          <!-- زر القائمة الجانبية (مفعل للفتح والإغلاق بسلاسة) -->
+          <!-- زر القائمة الجانبية (مفعل للفتح والإغلاق بمتغير واضح) -->
           <button id="iptvToggleSidebar" class="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow">
             <i class="fa-solid fa-bars"></i> القائمة
           </button>
@@ -72,8 +72,8 @@ function openIptvService() {
 
       <div class="flex flex-1 overflow-hidden relative">
 
-        <!-- Sidebar Navigation (تم ضبطها لتكون مخفية افتراضياً بـ translate-x-full وتظهر عند الضغط) -->
-        <aside id="iptvSidebar" class="absolute md:relative inset-y-0 right-0 z-30 w-72 bg-[#151c2c] border-l border-[#232d42] flex flex-col shrink-0 overflow-y-auto transition-transform duration-300 transform translate-x-full shadow-2xl">
+        <!-- Sidebar Navigation (تعديل كلاس الإخفاء والتحكم بـ hidden/translate لضمان ظهورها عند الضغط) -->
+        <aside id="iptvSidebar" class="absolute md:relative inset-y-0 right-0 z-30 w-72 bg-[#151c2c] border-l border-[#232d42] flex flex-col shrink-0 overflow-y-auto transition-transform duration-300 translate-x-full shadow-2xl">
           <div class="p-3 border-b border-[#232d42] space-y-2">
             <div class="relative">
               <i class="fa-solid fa-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
@@ -165,7 +165,7 @@ function openIptvService() {
             </div>
           </section>
 
-          <!-- قائمة القنوات السريعة (تحديث الدفعات لمنع أي تعليق) -->
+          <!-- قائمة القنوات السريعة -->
           <section class="flex-1 flex flex-col bg-[#0b0f19] overflow-hidden">
             <div class="p-2 bg-[#151c2c]/50 border-b border-[#232d42] flex items-center justify-between shrink-0">
               <span class="text-[11px] font-bold text-gray-300 flex items-center gap-1">
@@ -253,11 +253,16 @@ function initIptvPlayerLogic() {
   loadPlaylistData();
 
   function setupEvents() {
-    // تفعيل زر القائمة لإخفاء وإظهار القائمة الجانبية بسلاسة تامة بدون تعليق
+    // تفعيل زر القائمة لإظهار وإخفاء القائمة الجانبية بسلاسة تامة
     if (toggleSidebar && sidebar) {
       toggleSidebar.addEventListener('click', (e) => {
         e.stopPropagation();
-        sidebar.classList.toggle('translate-x-full');
+        // التبديل بين إظهار القائمة وإخفائها باستخدام transform
+        if (sidebar.classList.contains('translate-x-full')) {
+          sidebar.classList.remove('translate-x-full');
+        } else {
+          sidebar.classList.add('translate-x-full');
+        }
       });
     }
 
@@ -410,7 +415,6 @@ function initIptvPlayerLogic() {
       return matchSearch && matchCat && matchCnt && matchFav;
     });
 
-    // عرض أول 150 قناة فقط كدفعة أولي لتسريع الاستجابة نهائياً ومنع أي تعليق
     renderGrid(filteredChannels.slice(0, 150));
     visibleCountText.textContent = `عرض ${filteredChannels.length} قناة`;
   }
