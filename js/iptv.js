@@ -1,5 +1,5 @@
 // ==========================================
-// مشغل IPTV المتقدم الشامل (Ali-K IPTV Live)
+// مشغل IPTV المتقدم والسريع (Ali-K IPTV Live)
 // ==========================================
 
 function openIptvService() {
@@ -12,10 +12,8 @@ function openIptvService() {
     return;
   }
 
-  // ضبط عنوان النافذة
-  title.innerHTML = '<i class="fa-solid fa-tv" style="color: #6366f1;"></i> مشغل القنوات المباشرة | IPTV Fast Web Player';
+  title.innerHTML = '<i class="fa-solid fa-tv" style="color: #6366f1;"></i> مشغل القنوات المباشرة | IPTV Fast Player';
 
-  // تحميل Tailwind CSS و HLS.js إن لم يكونا موجودين
   if (!document.getElementById('tailwind-cdn')) {
     const tw = document.createElement('script');
     tw.id = 'tailwind-cdn';
@@ -44,35 +42,29 @@ function openIptvService() {
     document.head.appendChild(hlsScript);
   }
 
-  // بناء واجهة IPTV داخل جسم النافذة المنبثقة
   body.innerHTML = `
     <div class="bg-[#0b0f19] text-gray-100 flex flex-col h-[78vh] overflow-hidden rounded-xl border border-[#232d42]" style="direction: rtl;">
 
-      <!-- Header / Navbar داخل المودال -->
-      <header class="bg-[#151c2c] border-b border-[#232d42] px-3 py-2.5 flex items-center justify-between shrink-0 z-20">
+      <!-- Header -->
+      <header class="bg-[#151c2c] border-b border-[#232d42] px-3 py-2 flex items-center justify-between shrink-0 z-20">
         <div class="flex items-center gap-2">
-          <!-- زر إظهار وإخفاء القائمة الجانبية -->
-          <button id="iptvToggleSidebar" class="text-gray-300 hover:text-white p-1.5 rounded-lg bg-slate-800/80 transition" title="إخفاء/إظهار القائمة">
-            <i class="fa-solid fa-bars text-sm"></i>
+          <!-- زر إظهار وإخفاء القائمة الجانبية الواضح -->
+          <button id="iptvToggleSidebar" class="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition flex items-center gap-1 shadow">
+            <i class="fa-solid fa-bars"></i> القائمة
           </button>
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center text-white font-bold shadow-md shadow-brand-600/30">
+          <div class="flex items-center gap-1.5">
+            <div class="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center text-white font-bold">
               <i class="fa-solid fa-tv text-xs"></i>
             </div>
-            <div>
-              <h1 class="font-bold text-xs leading-tight text-white">IPTV Live TV</h1>
-              <p class="text-[9px] text-gray-400">بث مباشر سريع</p>
-            </div>
+            <h1 class="font-bold text-xs text-white">IPTV Live</h1>
           </div>
         </div>
 
-        <!-- Header Actions -->
         <div class="flex items-center gap-2">
-          <div id="iptvStatusBadge" class="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+          <div id="iptvStatusBadge" class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
             <span id="iptvStatusText">جاري التحميل...</span>
           </div>
-          <button id="iptvReloadBtn" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-gray-300 transition text-xs" title="إعادة تحميل القنوات">
+          <button id="iptvReloadBtn" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-gray-300 transition text-xs" title="إعادة تحميل">
             <i class="fa-solid fa-rotate text-xs"></i>
           </button>
         </div>
@@ -80,12 +72,12 @@ function openIptvService() {
 
       <div class="flex flex-1 overflow-hidden relative">
 
-        <!-- Sidebar Navigation & Filters -->
-        <aside id="iptvSidebar" class="absolute md:relative inset-y-0 right-0 z-30 w-64 bg-[#151c2c] border-l border-[#232d42] flex flex-col shrink-0 overflow-y-auto transition-transform duration-300">
-          <div class="p-3 border-b border-[#232d42] space-y-2.5">
+        <!-- Sidebar Navigation (تعديل الـ z-index والتحكم بالإخفاء والإظهار) -->
+        <aside id="iptvSidebar" class="absolute md:relative inset-y-0 right-0 z-40 w-72 bg-[#151c2c] border-l border-[#232d42] flex flex-col shrink-0 overflow-y-auto transition-transform duration-300 shadow-2xl md:shadow-none">
+          <div class="p-3 border-b border-[#232d42] space-y-2">
             <div class="relative">
               <i class="fa-solid fa-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-              <input type="text" id="iptvSearchInput" placeholder="ابحث عن قناة..." class="w-full bg-[#0b0f19] border border-[#232d42] focus:border-brand-500 rounded-lg py-1.5 pr-8 pl-3 text-xs text-gray-200 placeholder-gray-500 focus:outline-none transition">
+              <input type="text" id="iptvSearchInput" placeholder="ابحث عن قناة..." class="w-full bg-[#0b0f19] border border-[#232d42] focus:border-brand-500 rounded-lg py-1.5 pr-8 pl-3 text-xs text-gray-200 placeholder-gray-500 focus:outline-none">
             </div>
 
             <div class="grid grid-cols-2 gap-1 bg-[#0b0f19] p-1 rounded-lg border border-[#232d42]">
@@ -94,30 +86,27 @@ function openIptvService() {
             </div>
           </div>
 
-          <div class="p-3 border-b border-[#232d42] space-y-2.5">
+          <div class="p-3 border-b border-[#232d42] space-y-2">
             <div>
               <label class="text-[10px] font-semibold text-gray-400 block mb-1">التصنيف</label>
-              <select id="iptvCategorySelect" class="w-full bg-[#0b0f19] border border-[#232d42] rounded-lg px-2.5 py-1.5 text-[11px] text-gray-200 focus:outline-none focus:border-brand-500">
+              <select id="iptvCategorySelect" class="w-full bg-[#0b0f19] border border-[#232d42] rounded-lg px-2.5 py-1.5 text-[11px] text-gray-200 focus:outline-none">
                 <option value="">جميع التصنيفات</option>
               </select>
             </div>
             <div>
               <label class="text-[10px] font-semibold text-gray-400 block mb-1">الدولة / المنطقة</label>
-              <select id="iptvCountrySelect" class="w-full bg-[#0b0f19] border border-[#232d42] rounded-lg px-2.5 py-1.5 text-[11px] text-gray-200 focus:outline-none focus:border-brand-500">
+              <select id="iptvCountrySelect" class="w-full bg-[#0b0f19] border border-[#232d42] rounded-lg px-2.5 py-1.5 text-[11px] text-gray-200 focus:outline-none">
                 <option value="">جميع الدول</option>
               </select>
             </div>
           </div>
 
-          <div class="p-3 border-b border-[#232d42] bg-slate-900/40">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-[11px] font-semibold text-gray-300">خادم Proxy للبث</span>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="iptvUseProxyToggle" class="sr-only peer">
-                <div class="w-7 h-3.5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-brand-600"></div>
-              </label>
-            </div>
-            <p class="text-[10px] text-gray-400">تفعيل البروكسي عند مشاكل الحظر أو CORS.</p>
+          <div class="p-3 border-b border-[#232d42] bg-slate-900/40 flex items-center justify-between">
+            <span class="text-[11px] font-semibold text-gray-300">خادم Proxy للبث</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="iptvUseProxyToggle" class="sr-only peer">
+              <div class="w-7 h-3.5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-brand-600"></div>
+            </label>
           </div>
 
           <div class="p-2.5 mt-auto text-center border-t border-[#232d42]">
@@ -126,9 +115,9 @@ function openIptvService() {
         </aside>
 
         <!-- Main Area -->
-        <main class="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#0b0f19]">
+        <main class="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#0b0f19] relative z-10">
           <section class="w-full md:w-[60%] lg:w-[65%] flex flex-col justify-center relative border-b md:border-b-0 md:border-l border-[#232d42] shrink-0">
-            <div class="relative w-full aspect-video bg-black flex items-center justify-center group overflow-hidden">
+            <div class="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden">
               <video id="iptvVideoPlayer" class="w-full h-full object-contain" controls crossorigin="anonymous"></video>
 
               <div id="iptvPlayerPlaceholder" class="absolute inset-0 bg-slate-950 flex flex-col items-center justify-center p-4 text-center z-10">
@@ -136,11 +125,11 @@ function openIptvService() {
                   <i class="fa-solid fa-play text-xl"></i>
                 </div>
                 <h3 class="text-sm font-bold text-white mb-1">اختر قناة للبدء بالتشغيل</h3>
-                <p class="text-[11px] text-gray-400 max-w-xs">اضغط على زر القائمة (☰) بالأعلى لاختيار قناة.</p>
+                <p class="text-[11px] text-gray-400">اضغط على زر "القائمة" بالأعلى لاختيار قناة.</p>
               </div>
 
               <div id="iptvVideoLoader" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center z-10">
-                <div class="w-10 h-10 border-3 border-brand-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+                <div class="w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full animate-spin mb-2"></div>
                 <p class="text-xs text-gray-200 font-semibold" id="iptvLoaderText">جاري الاتصال بالبث...</p>
               </div>
 
@@ -149,10 +138,10 @@ function openIptvService() {
                   <i class="fa-solid fa-triangle-exclamation text-lg"></i>
                 </div>
                 <h4 class="text-xs font-bold text-white mb-1">تعذر تشغيل هذا البث</h4>
-                <p class="text-[11px] text-gray-400 max-w-xs mb-3" id="iptvErrorMessage">قد يكون البث غير متوفر حالياً.</p>
+                <p class="text-[11px] text-gray-400 mb-3" id="iptvErrorMessage">قد يكون البث غير متوفر حالياً.</p>
                 <div class="flex gap-2">
-                  <button id="iptvRetryStreamBtn" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-[11px] font-semibold rounded-lg transition">إعادة المحاولة</button>
-                  <button id="iptvTryProxyBtn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-gray-200 text-[11px] font-semibold rounded-lg transition">التشغيل عبر Proxy</button>
+                  <button id="iptvRetryStreamBtn" class="px-3 py-1.5 bg-brand-600 text-white text-[11px] font-semibold rounded-lg">إعادة المحاولة</button>
+                  <button id="iptvTryProxyBtn" class="px-3 py-1.5 bg-slate-800 text-gray-200 text-[11px] font-semibold rounded-lg">التشغيل عبر Proxy</button>
                 </div>
               </div>
             </div>
@@ -163,8 +152,8 @@ function openIptvService() {
                 <div class="truncate">
                   <h2 id="iptvActiveTitle" class="font-bold text-xs text-white truncate">لم يتم اختيار قناة</h2>
                   <div class="flex items-center gap-1.5 mt-0.5">
-                    <span id="iptvActiveGroup" class="text-[10px] px-1.5 py-0.5 bg-slate-800 text-gray-400 rounded border border-[#232d42]">عام</span>
-                    <span id="iptvActiveCountry" class="text-[10px] px-1.5 py-0.5 bg-slate-800 text-gray-400 rounded border border-[#232d42]">عالمي</span>
+                    <span id="iptvActiveGroup" class="text-[10px] px-1.5 py-0.5 bg-slate-800 text-gray-400 rounded">عام</span>
+                    <span id="iptvActiveCountry" class="text-[10px] px-1.5 py-0.5 bg-slate-800 text-gray-400 rounded">عالمي</span>
                   </div>
                 </div>
               </div>
@@ -174,10 +163,11 @@ function openIptvService() {
             </div>
           </section>
 
+          <!-- Channels Section (مع منع التعليق عبر تقنية الـ Lazy Rendering) -->
           <section class="flex-1 flex flex-col bg-[#0b0f19] overflow-hidden">
             <div class="p-2.5 bg-[#151c2c]/50 border-b border-[#232d42] flex items-center justify-between shrink-0">
               <span class="text-[11px] font-bold text-gray-300 flex items-center gap-1">
-                <i class="fa-solid fa-list-ul text-brand-500"></i> قائمة القنوات
+                <i class="fa-solid fa-list-ul text-brand-500"></i> قائمة القنوات (سريعة)
               </span>
               <span id="iptvVisibleCountText" class="text-[11px] text-gray-400">عرض 0 قناة</span>
             </div>
@@ -185,7 +175,7 @@ function openIptvService() {
             <div id="iptvChannelsContainer" class="flex-1 overflow-y-auto p-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div class="col-span-full py-12 flex flex-col items-center justify-center text-center">
                 <div class="w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full animate-spin mb-2"></div>
-                <p class="text-xs font-semibold text-gray-300">جاري جلب القنوات المباشرة...</p>
+                <p class="text-xs font-semibold text-gray-300">جاري تجهيز القنوات بسلاسة...</p>
               </div>
             </div>
           </section>
@@ -195,16 +185,11 @@ function openIptvService() {
   `;
 
   modal.style.display = "flex";
-
-  setTimeout(() => {
-    initIptvPlayerLogic();
-  }, 100);
+  setTimeout(() => initIptvPlayerLogic(), 100);
 }
 
-// ضمان إتاحة الدالة عالمياً
 window.openIptvService = openIptvService;
 
-// ربط الزر تلقائياً فور تحميل المستند لتجاوز أي تعارض مع app.js
 document.addEventListener("DOMContentLoaded", () => {
   const card = document.getElementById("iptvToolCard");
   if (card) {
@@ -215,7 +200,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// منطق تشغيل المشغل الداخلي
 function initIptvPlayerLogic() {
   let allChannels = [];
   let filteredChannels = [];
@@ -225,10 +209,7 @@ function initIptvPlayerLogic() {
   let activeTab = 'all';
   let useProxyForStream = false;
 
-  const CORS_PROXIES = [
-    'https://corsproxy.io/?',
-    'https://api.allorigins.win/raw?url='
-  ];
+  const CORS_PROXIES = ['https://corsproxy.io/?', 'https://api.allorigins.win/raw?url='];
   const M3U_URL = 'https://iptv-org.github.io/iptv/index.m3u';
 
   const videoPlayer = document.getElementById('iptvVideoPlayer');
@@ -269,8 +250,10 @@ function initIptvPlayerLogic() {
   loadPlaylistData();
 
   function setupEvents() {
+    // تفعيل زر إخفاء وإظهار القائمة الجانبية بشكل فوري
     if (toggleSidebar && sidebar) {
-      toggleSidebar.addEventListener('click', () => {
+      toggleSidebar.addEventListener('click', (e) => {
+        e.stopPropagation();
         sidebar.classList.toggle('translate-x-full');
       });
     }
@@ -281,7 +264,13 @@ function initIptvPlayerLogic() {
       if (currentChannel) playChannel(currentChannel);
     });
 
-    searchInput.addEventListener('input', filterAndRender);
+    // استخدام Debounce للبحث لمنع التعليق أثناء الكتابة
+    let searchTimeout;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => filterAndRender(), 200);
+    });
+
     categorySelect.addEventListener('change', filterAndRender);
     countrySelect.addEventListener('change', filterAndRender);
 
@@ -311,7 +300,7 @@ function initIptvPlayerLogic() {
     channelsContainer.innerHTML = `
       <div class="col-span-full py-12 flex flex-col items-center justify-center text-center">
         <div class="w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full animate-spin mb-2"></div>
-        <p class="text-xs font-semibold text-gray-300">جاري جلب قائمة البث المباشر...</p>
+        <p class="text-xs font-semibold text-gray-300">جاري جلب القنوات...</p>
       </div>
     `;
 
@@ -319,7 +308,7 @@ function initIptvPlayerLogic() {
       let m3uText = await fetchM3UData(M3U_URL);
       allChannels = parseM3UData(m3uText);
 
-      if (allChannels.length === 0) throw new Error('لم يتم العثور على قنوات.');
+      if (allChannels.length === 0) throw new Error('لا توجد قنوات.');
 
       populateFiltersData(allChannels);
       updateGlobalCounts();
@@ -327,13 +316,10 @@ function initIptvPlayerLogic() {
       updateStatus(`جاهز (${allChannels.length})`, 'emerald');
 
     } catch (err) {
-      console.error(err);
       updateStatus('فشل التحميل', 'red');
       channelsContainer.innerHTML = `
-        <div class="col-span-full py-10 flex flex-col items-center justify-center text-center px-3">
-          <i class="fa-solid fa-circle-exclamation text-2xl text-red-500 mb-2"></i>
-          <p class="text-xs font-bold text-white mb-1">تعذر تحميل القنوات</p>
-          <p class="text-[10px] text-gray-400 mb-3">${err.message}</p>
+        <div class="col-span-full py-10 flex flex-col items-center justify-center text-center px-3 text-xs text-red-400">
+          <p>تعذر تحميل القنوات، تأكد من الاتصال.</p>
         </div>
       `;
     }
@@ -342,7 +328,7 @@ function initIptvPlayerLogic() {
   async function fetchM3UData(url) {
     try {
       const res = await fetch(url);
-      if (!res.ok) throw new Error('Direct fetch failed');
+      if (!res.ok) throw new Error();
       return await res.text();
     } catch (e) {
       for (const proxy of CORS_PROXIES) {
@@ -351,7 +337,7 @@ function initIptvPlayerLogic() {
           if (res.ok) return await res.text();
         } catch (err) {}
       }
-      throw new Error('فشل الاتصال بمصدر القنوات.');
+      throw new Error();
     }
   }
 
@@ -389,7 +375,6 @@ function initIptvPlayerLogic() {
   function populateFiltersData(channels) {
     const categories = new Set();
     const countries = new Set();
-
     channels.forEach(ch => {
       if (ch.group) categories.add(ch.group);
       if (ch.country) countries.add(ch.country);
@@ -423,7 +408,8 @@ function initIptvPlayerLogic() {
       return matchSearch && matchCat && matchCnt && matchFav;
     });
 
-    renderGrid(filteredChannels);
+    // عرض أول 150 قناة فقط كدفعة أولي لمنع تعليق المتصفح نهائياً
+    renderGrid(filteredChannels.slice(0, 150));
     visibleCountText.textContent = `عرض ${filteredChannels.length} قناة`;
   }
 
@@ -431,7 +417,6 @@ function initIptvPlayerLogic() {
     if (channels.length === 0) {
       channelsContainer.innerHTML = `
         <div class="col-span-full py-10 flex flex-col items-center justify-center text-center text-gray-400 text-xs">
-          <i class="fa-solid fa-tv text-2xl mb-1 text-slate-600"></i>
           <p>لا توجد قنوات مطابقة</p>
         </div>
       `;
@@ -472,7 +457,7 @@ function initIptvPlayerLogic() {
     filterAndRender();
     playChannel(channel);
 
-    if (window.innerWidth < 768 && sidebar) {
+    if (sidebar) {
       sidebar.classList.add('translate-x-full');
     }
   };
@@ -510,7 +495,7 @@ function initIptvPlayerLogic() {
       });
 
       hlsInstance.on(window.Hls.Events.ERROR, (event, data) => {
-        if (data.fatal) showVideoErr('فشل الاتصال بشبكة البث أو توقف القناة.');
+        if (data.fatal) showVideoErr('فشل الاتصال بشبكة البث.');
       });
     } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
       videoPlayer.src = streamUrl;
@@ -519,7 +504,7 @@ function initIptvPlayerLogic() {
         videoPlayer.play();
       });
     } else {
-      showVideoErr('المتصفح لا يدعم هذا النوع من البث.');
+      showVideoErr('المتصفح لا يدعم هذا النوع.');
     }
   }
 
@@ -568,11 +553,11 @@ function initIptvPlayerLogic() {
   function updateStatus(text, color) {
     statusText.textContent = text;
     if (color === 'emerald') {
-      statusBadge.className = 'flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+      statusBadge.className = 'flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
     } else if (color === 'red') {
-      statusBadge.className = 'flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20';
+      statusBadge.className = 'flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20';
     } else {
-      statusBadge.className = 'flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20';
+      statusBadge.className = 'flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20';
     }
   }
 
