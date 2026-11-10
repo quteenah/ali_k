@@ -42,14 +42,15 @@ function openIptvService() {
     document.head.appendChild(hlsScript);
   }
 
+  // استخدام onclick مباشر داخل زر القائمة لضمان الاستجابة الفورية 100%
   body.innerHTML = `
     <div class="bg-[#0b0f19] text-gray-100 flex flex-col h-[78vh] overflow-hidden rounded-xl border border-[#232d42]" style="direction: rtl;">
 
       <!-- Header -->
       <header class="bg-[#151c2c] border-b border-[#232d42] px-3 py-2 flex items-center justify-between shrink-0 z-30">
         <div class="flex items-center gap-2">
-          <!-- زر القائمة الجانبية (مفعل للفتح والإغلاق بـ JS المباشر) -->
-          <button id="iptvToggleSidebar" class="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow cursor-pointer">
+          <!-- زر القائمة مع استدعاء دالة toggleIptvSidebar مباشرة -->
+          <button type="button" onclick="toggleIptvSidebar()" class="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow cursor-pointer">
             <i class="fa-solid fa-bars"></i> القائمة
           </button>
           <div class="flex items-center gap-1.5">
@@ -64,7 +65,7 @@ function openIptvService() {
           <div id="iptvStatusBadge" class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
             <span id="iptvStatusText">جاري التحميل...</span>
           </div>
-          <button id="iptvReloadBtn" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-gray-300 transition text-xs cursor-pointer" title="إعادة تحميل">
+          <button type="button" id="iptvReloadBtn" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-gray-300 transition text-xs cursor-pointer" title="إعادة تحميل">
             <i class="fa-solid fa-rotate text-xs"></i>
           </button>
         </div>
@@ -72,7 +73,7 @@ function openIptvService() {
 
       <div class="flex flex-1 overflow-hidden relative">
 
-        <!-- Sidebar Navigation (تبدأ مخفية عبر display: none وتعمل بالتبديل الفوري) -->
+        <!-- Sidebar Navigation (تبدأ مخفية وتعمل بالتبديل المباشر) -->
         <aside id="iptvSidebar" class="absolute md:relative inset-y-0 right-0 z-30 w-72 bg-[#151c2c] border-l border-[#232d42] flex flex-col shrink-0 overflow-y-auto transition-all duration-300 shadow-2xl" style="display: none;">
           <div class="p-3 border-b border-[#232d42] space-y-2">
             <div class="relative">
@@ -81,8 +82,8 @@ function openIptvService() {
             </div>
 
             <div class="grid grid-cols-2 gap-1 bg-[#0b0f19] p-1 rounded-lg border border-[#232d42]">
-              <button id="iptvTabAll" class="py-1 text-[11px] font-semibold rounded bg-brand-600 text-white transition cursor-pointer">الكل (<span id="iptvCountAll">0</span>)</button>
-              <button id="iptvTabFavs" class="py-1 text-[11px] font-semibold rounded text-gray-400 hover:text-white transition cursor-pointer">المفضلة (<span id="iptvCountFavs">0</span>)</button>
+              <button type="button" id="iptvTabAll" class="py-1 text-[11px] font-semibold rounded bg-brand-600 text-white transition cursor-pointer">الكل (<span id="iptvCountAll">0</span>)</button>
+              <button type="button" id="iptvTabFavs" class="py-1 text-[11px] font-semibold rounded text-gray-400 hover:text-white transition cursor-pointer">المفضلة (<span id="iptvCountFavs">0</span>)</button>
             </div>
           </div>
 
@@ -142,8 +143,8 @@ function openIptvService() {
                 <h4 class="text-xs font-bold text-white mb-1">تعذر تشغيل هذا البث</h4>
                 <p class="text-[11px] text-gray-400 mb-3" id="iptvErrorMessage">قد يكون البث غير متوفر حالياً.</p>
                 <div class="flex gap-2">
-                  <button id="iptvRetryStreamBtn" class="px-3 py-1.5 bg-brand-600 text-white text-[11px] font-semibold rounded-lg cursor-pointer">إعادة المحاولة</button>
-                  <button id="iptvTryProxyBtn" class="px-3 py-1.5 bg-slate-800 text-gray-200 text-[11px] font-semibold rounded-lg cursor-pointer">التشغيل عبر Proxy</button>
+                  <button type="button" id="iptvRetryStreamBtn" class="px-3 py-1.5 bg-brand-600 text-white text-[11px] font-semibold rounded-lg cursor-pointer">إعادة المحاولة</button>
+                  <button type="button" id="iptvTryProxyBtn" class="px-3 py-1.5 bg-slate-800 text-gray-200 text-[11px] font-semibold rounded-lg cursor-pointer">التشغيل عبر Proxy</button>
                 </div>
               </div>
             </div>
@@ -159,7 +160,7 @@ function openIptvService() {
                   </div>
                 </div>
               </div>
-              <button id="iptvFavCurrentBtn" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-gray-400 transition shrink-0 cursor-pointer">
+              <button type="button" id="iptvFavCurrentBtn" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-gray-400 transition shrink-0 cursor-pointer">
                 <i class="fa-regular fa-star text-sm"></i>
               </button>
             </div>
@@ -191,7 +192,20 @@ function openIptvService() {
   setTimeout(() => initIptvPlayerLogic(), 100);
 }
 
+// دالة فتح وإغلاق القائمة المتاحة عالمياً للزر المباشر
+function toggleIptvSidebar() {
+  const sidebar = document.getElementById("iptvSidebar");
+  if (sidebar) {
+    if (sidebar.style.display === "none" || sidebar.style.display === "") {
+      sidebar.style.display = "flex";
+    } else {
+      sidebar.style.display = "none";
+    }
+  }
+}
+
 window.openIptvService = openIptvService;
+window.toggleIptvSidebar = toggleIptvSidebar;
 
 document.addEventListener("DOMContentLoaded", () => {
   const card = document.getElementById("iptvToolCard");
@@ -228,8 +242,6 @@ function initIptvPlayerLogic() {
   const visibleCountText = document.getElementById('iptvVisibleCountText');
   const tabAll = document.getElementById('iptvTabAll');
   const tabFavs = document.getElementById('iptvTabFavs');
-  const toggleSidebar = document.getElementById('iptvToggleSidebar');
-  const sidebar = document.getElementById('iptvSidebar');
   const reloadPlaylistBtn = document.getElementById('iptvReloadBtn');
   const useProxyToggle = document.getElementById('iptvUseProxyToggle');
 
@@ -253,18 +265,6 @@ function initIptvPlayerLogic() {
   loadPlaylistData();
 
   function setupEvents() {
-    // تفعيل زر القائمة لفتح وإغلاق القائمة الجانبية فورياً وبشكل مضمون
-    if (toggleSidebar && sidebar) {
-      toggleSidebar.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (sidebar.style.display === 'none' || sidebar.style.display === '') {
-          sidebar.style.display = 'flex';
-        } else {
-          sidebar.style.display = 'none';
-        }
-      });
-    }
-
     reloadPlaylistBtn.addEventListener('click', () => loadPlaylistData(true));
     useProxyToggle.addEventListener('change', (e) => {
       useProxyForStream = e.target.checked;
@@ -441,7 +441,7 @@ function initIptvPlayerLogic() {
             <span class="text-[9px] text-gray-400 block truncate mt-0.5">${escapeHtml(ch.group)}</span>
           </div>
 
-          <button onclick="event.stopPropagation(); window.toggleIptvFavItem('${ch.id}')" class="p-1 text-gray-500 hover:text-amber-400 transition cursor-pointer">
+          <button type="button" onclick="event.stopPropagation(); window.toggleIptvFavItem('${ch.id}')" class="p-1 text-gray-500 hover:text-amber-400 transition cursor-pointer">
             <i class="${isFav ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star'} text-xs"></i>
           </button>
         </div>
@@ -462,7 +462,7 @@ function initIptvPlayerLogic() {
     filterAndRender();
     playChannel(channel);
 
-    // إخفاء القائمة تلقائياً عند اختيار القناة لتجربة مشاهدة مريحة
+    const sidebar = document.getElementById("iptvSidebar");
     if (sidebar) {
       sidebar.style.display = 'none';
     }
